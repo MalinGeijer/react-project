@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+
+# ML data
+*.npy
+*.pkl
+*.h5
+*.onnx
+
+# Virtual env
+react-env/
+.env
+
+processed_images/
+test_images/

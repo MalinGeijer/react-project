@@ -1,0 +1,277 @@
+EXPLORATORY DATA ANALYSIS (exploration.ipynb)
+
+1. Visa några exempelbilder (visuell inspektion)
+(Importera bild från notebook)
+
+Syfte:
+det faktiskt är siffror
+etiketter och bilder matchar
+kvaliteten ser rimlig ut
+Tolkning:
+Bilderna är tydliga
+Siffrorna är hyggligt centrerade
+Det finns variation i handstil
+De är i gråskala
+28x28px
+60000 st träningsbilder
+10000 st testbilder
+# x_train = training images
+# y_train = training labels, i.e., the correct answers number 0-9
+# x_test = test images
+# y_test = test labels, i.e., the correct answers number 0-9
+# Split the data into a training set and a test set.
+# The test set is used to evaluate the model after training. New images that the model has never seen before.
+# Preventing overfitting. No guessing.
+
+2. Titta på pixelvärden (statistisk inspektion av pixelväden)
+
+Syfte:
+vilket intervall pixlarna ligger i
+om normalisering kommer behövas senare
+
+min ≈ 0 (svart)
+max ≈ 255 (vitt)
+mean ≈ 30–40
+
+Tolkning:
+Pixlar är i originalintervall 0–255
+Normalisering till 0–1 kommer vara rimligt inför träning
+
+3. Räkna hur många av varje siffra som finns (klassbalans/Fördelning)
+(Importera bild från notebook)
+
+Syfte:
+alla siffror är jämnt representerade
+det finns risk för obalanserad träning
+
+Tolkning:
+MNIST är nästan perfekt balanserat
+Inga klasser är kraftigt underrepresenterade
+-------------------------------------------------------------------------------------------------------------------------
+DATA CLEANING & PREPROCESSING (02_cleaning.ipynb)
+
+
+1. Normalisering av pixelvärden
+
+Syfte:
+
+Förbättra modellens inlärning, alla inputs konkurrerar på lika vilkor
+Göra beräkningarna numeriskt stabila, inlärningen går snabbare
+Det är inte så att datorn räknar snabbare för att talen är mindre i sig.
+Det som går snabbare är:
+
+✅ konvergensen (färre träningssteg behövs)
+
+✅ optimeringen blir stabil
+
+✅ du slipper extremt små learning rates
+
+Så tekniskt mer korrekt är:
+
+👉 “Normalisering gör att modellen lär sig snabbare och stabilare”
+Skala om värden från intervallet 0–255 till 0–1
+
+Tolkning:
+
+Pixlar låg tidigare i originalintervallet 0–255
+Efter normalisering ligger alla värden mellan 0 och 1
+Detta gör att modeller tränas snabbare och stabilare
+
+3. Kontroll efter normalisering
+
+Syfte:
+
+Inga värden hamnat utanför intervallet 0–1
+Ingen data gått förlorad
+
+Tolkning:
+
+Minsta värde ≈ 0
+Högsta värde ≈ 1
+
+
+4. Omformning av bilder till feature-vektorer (flattening)
+
+Syfte:
+
+Göra bilddata kompatibelt med klassiska ML-modeller:
+Logistic Regression
+Random Forest
+
+Omvandla:
+
+28×28 pixlar → 784 numeriska features per bild
+
+Tolkning:
+
+Varje bild representeras nu som en rad med 784 värden
+Modellerna kan nu tolka varje pixel som en individuell input-variabel
+
+5. Kontroll av nya datadimensioner
+
+Syfte:
+
+Säkerställa att omformningen har gått rätt till
+Bekräfta att antal observationer är oförändrat
+
+Tolkning:
+
+Antalet tränings- och testexempel är oförändrat
+Endast formen på datat har ändrats
+Datat är nu redo för maskininlärning
+----------------------------------------------------------------------------------------------------------------------
+MODELTEST (logistic_regression.ipynb)
+
+1. Logistic Regression
+
+Logistic Regression är linjär.
+Men… ✅ den ger ett icke-linjärt utdata (sannolikhet) via sigmoiden.
+
+Hur lär sig Logistic Regression?
+
+Modellen gissar
+Den jämför med facit
+Den räknar hur fel den hade (log loss)
+Den justerar vikterna
+Den gissar igen
+
+Detta sker med optimering (L-BFGS i ditt fall).
+
+✅ Vad är Logistic Regression?
+
+Trots namnet är Logistic Regression egentligen en klassificeringsmodell, inte en regressionsmodell i vanlig mening.
+
+Den svarar på frågor som:
+“Är detta en 0 eller inte?”
+“Vilken siffra 0–9 är detta?”
+“Kommer en kund säga upp sig eller inte?”
+
+Alltså:
+Den gissar sannolikhet för klasser – inte ett exakt tal.
+
+Vad är Logistic Regression BRA för?
+
+Den är fantastisk när:
+
+✅ 1. Du vill ha en lättförklarlig modell
+
+Du kan titta på:
+
+model.coef_
+heatmaps
+
+✅ 2. Du vill ha en stabil baseline
+
+Den används ofta som: “Första modellen att slå”
+Om en avancerad modell inte slår Logistic Regression → då är något fel i datat.
+
+✅ 3. Bra för:
+
+Ja/Nej
+Klass A/B
+0–9 (som MNIST)
+Spam/inte spam
+Sjuk/frisk
+
+✅ 4. Snabb träning och låg resursåtgång
+
+Går att träna på CPU
+Mycket snabb på prediction
+
+Perfekt för:
+API
+realtidsanvändning
+inbäddade system
+
+❌ Vad är Logistic Regression DÅLIG på?
+
+❌ Icke-linjära samband (krökta mönster)
+
+❌ Komplexa bilder (ansikten, färgfoton)
+
+❌ När mönstren inte går att separera linjärt
+
+❌ När relationerna mellan pixlar är mer avancerade (där CNN behövs)
+
+MNIST funkar bra eftersom:
+
+siffrorna är centrerade
+
+bakgrunden är ren
+
+kontrasten är hög
+
+✅ Varför funkade den så bra för dig (~92–93 %)?
+
+För att:
+
+MNIST är ett väldigt välstrukturerat dataset
+
+Siffror är nästan linjärt separerbara
+
+Du:
+
+normaliserade korrekt ✅
+
+flattenade korrekt ✅
+
+Du gjorde alltså allt metodiskt rätt.
+
+✅ Superkort sammanfattning
+
+Du kan beskriva Logistic Regression så här i din rapport:
+
+Logistic Regression är en sannolikhetsbaserad klassificeringsmodell som beräknar sannolikheten
+för varje klass genom en viktad summering av indata följt av en softmax-funktion.
+Modellen tränas genom att minimera log-förlust och justera vikterna iterativt.
+Den lämpar sig väl som baseline-modell och fungerar effektivt för linjärt separerbara problem såsom MNIST.
+
+Total accuracy on test set: 0.9265
+
+              precision    recall  f1-score   support
+
+           0       0.95      0.98      0.97       980
+           1       0.96      0.98      0.97      1135
+           2       0.93      0.90      0.92      1032
+           3       0.90      0.91      0.91      1010
+           4       0.94      0.94      0.94       982
+           5       0.90      0.87      0.88       892
+           6       0.94      0.95      0.95       958
+           7       0.94      0.93      0.93      1028
+           8       0.88      0.88      0.88       974
+           9       0.91      0.92      0.92      1009
+
+    accuracy                           0.93     10000
+   macro avg       0.93      0.93      0.93     10000
+weighted avg       0.93      0.93      0.93     10000
+
+precision per siffra
+
+recall per siffra
+
+f1-score per siffra
+
+weighted / macro averages
+
+Detta är guld i rapporten eftersom du kan resonera om:
+
+vilka siffror modellen har svårast för
+
+vilka siffror är enklast
+
+om datat är balanserat (MNIST är nästan perfekt)
+
+Confusion matrix
+diagonalen = rätt gissningar
+
+allt utanför diagonalen = fel gissningar
+
+Detta är den bästa visuella analysen av modellen.
+------------------------------------------------------------------------------------------------------------
+
+2. Random Forrest
+
+Icke linjär -> massor av beslutsträd → kan lära sig krökta, komplexa mönster
+Random Forest Accuracy: 0.9704
+Random Forest visar högst pixelviktighet i bildens centrala delar där siffrorna är lokaliserade,
+medan bakgrundspixlar i hörnen bidrar mycket lite till klassificeringen.

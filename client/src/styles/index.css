@@ -1,0 +1,90 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ============================
+   THEME TOKENS
+============================ */
+
+@theme {
+  --color-base-bg: #262422;
+  --color-base-surface: #363432;
+  --color-base-text: #dddddd;
+  --color-base-border: #1e1e1e;
+  --color-base-muted: #a3a3a3;
+  --color-base-hover: #aa5500;
+}
+
+/* ============================
+   BASE STYLES
+============================ */
+@layer base {
+  /* Tar bort autofill-bakgrund och behåller din stil */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+    -webkit-text-fill-color: inherit !important;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  :root {
+    --text-shadow-sm: 3px 0 3px rgba(0, 0, 0, 0.25);
+    --text-shadow-md: 5px 0 5px rgba(0, 0, 0, 0.35);
+    --text-shadow-lg: 7px 0 7px rgba(0, 0, 0, 0.45);
+  }
+  input {
+    all: unset;
+    box-sizing: border-box;
+    font: inherit;
+    color: #111;
+    background-color: #181818;
+    padding: 0.15rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid border-base-border;
+
+    /* För bättre UX */
+    width: 100%; /* input fyller container */
+    display: block; /* förutsägbar layout */
+  }
+
+  input::placeholder {
+    color: #999; /* mild placeholder */
+  }
+
+  body {
+    @apply bg-zinc-900 text-base-text text-[18px];
+  }
+
+  h1 {
+    @apply text-5xl tracking-wide font-bold;
+  }
+  h2 {
+    @apply text-3xl tracking-wide font-semibold;
+  }
+  h3 {
+    @apply text-xl tracking-wide font-medium;
+  }
+}
+
+/* ============================
+   GLOBAL LAYOUT HELPERS
+============================ */
+@layer components {
+  .siteLayout {
+    @apply flex flex-col min-h-screen max-w-6xl mx-auto;
+  }
+
+  .siteHeader {
+    @apply bg-neutral-800 shrink-0 border-b border-base-border p-4;
+  }
+
+  .siteMain {
+    @apply bg-neutral-800 flex-1 p-4;
+  }
+
+  .siteFooter {
+    @apply bg-neutral-800 shrink-0 text-center text-sm border-t border-base-border p-4;
+  }
+}

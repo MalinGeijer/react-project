@@ -1,0 +1,40 @@
+import type { Product_T } from '../../types/types';
+
+type ProductDetailsProps = Product_T;
+
+export default function ProductDetails({
+  name,
+  price,
+  brand,
+  media_url,
+  description,
+}: ProductDetailsProps) {
+  return (
+    <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 bg-base-surface border border-base-border rounded-xl p-6">
+      {/* Bild */}
+      <div className="w-full aspect-4/5 overflow-hidden rounded-lg">
+        <img
+          src={media_url}
+          alt={name}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Info */}
+      <div className="flex flex-col gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">{name}</h1>
+          <p className="text-sm text-base-muted">{brand}</p>
+        </div>
+
+        <p className="text-lg font-medium">{price} kr</p>
+
+        <p className="text-base text-base-text">{description}</p>
+
+        <button className="mt-auto bg-brand-primary text-black font-medium py-3 rounded-lg hover:bg-brand-secondary transition">
+          Köp
+        </button>
+      </div>
+    </div>
+  );
+}

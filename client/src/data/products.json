@@ -1,0 +1,83 @@
+[
+  {
+    "id": 1,
+    "slug": "mug",
+    "title": "Mug",
+    "price": 349,
+    "brand": "Craftetc",
+    "imageUrl": "/assets/img1.jpg",
+    "description": "En stilren keramikmugg med skön tyngd och mjuk form för vardagens kaffestunder. Tål både diskmaskin och mikrovågsugn."
+  },
+  {
+    "id": 2,
+    "slug": "tote-bag",
+    "title": "Tote Bag",
+    "price": 199,
+    "brand": "Craftetc",
+    "imageUrl": "/assets/img2.jpg",
+    "description": "En slitstark tygkasse perfekt för både jobb, handling och vardagsutflykter. Minimalistisk design med tydlig Craftetc-känsla."
+  },
+  {
+    "id": 3,
+    "slug": "sticker-pack",
+    "title": "Sticker Pack",
+    "price": 99,
+    "brand": "Craftetc",
+    "imageUrl": "/assets/img1.jpg",
+    "description": "Ett set med handplockade klistermärken inspirerade av hantverk och kreativitet. Perfekta för laptop, anteckningsbok eller mobil."
+  },
+  {
+    "id": 4,
+    "slug": "notebook",
+    "title": "Notebook",
+    "price": 249,
+    "brand": "Craftetc",
+    "imageUrl": "/assets/img2.jpg",
+    "description": "En premium-anteckningsbok för skisser, idéer och reflektioner. Omslaget är tåligt och pappret är anpassat för både penna och tusch."
+  },
+  {
+    "id": 5,
+    "slug": "hoodie",
+    "title": "Hoodie",
+    "price": 799,
+    "brand": "Craftetc",
+    "imageUrl": "/assets/img1.jpg",
+    "description": "En mjuk och varm hoodie i hög kvalitet för både studioarbete och lediga dagar. Tidlös passform med diskret Craftetc-tryck."
+  },
+  {
+    "id": 6,
+    "slug": "cap",
+    "title": "Cap",
+    "price": 299,
+    "brand": "Craftetc",
+    "imageUrl": "/assets/img2.jpg",
+    "description": "En klassisk keps med justerbar passform och broderad logotyp. Perfekt för både soliga dagar och vardagsstil."
+  },
+  {
+    "id": 7,
+    "slug": "water-bottle",
+    "title": "Water Bottle",
+    "price": 399,
+    "brand": "Craftetc",
+    "imageUrl": "/assets/img1.jpg",
+    "description": "En robust vattenflaska i rostfritt stål som håller drycken kall eller varm länge. Ett hållbart val för både arbete och träning."
+  },
+  {
+    "id": 8,
+    "slug": "keychain",
+    "title": "Keychain",
+    "price": 149,
+    "brand": "Craftetc",
+    "imageUrl": "/assets/img2.jpg",
+    "description": "En stilren nyckelring i tåligt material som tål vardagens slitage. En liten detalj som ger personlighet åt dina nycklar."
+  },
+  {
+    "id": 9,
+    "slug": "phone-case",
+    "title": "Phone Case",
+    "price": 279,
+    "brand": "Craftetc",
+    "imageUrl": "/assets/img1.jpg",
+    "description": "Ett slitstarkt mobilskal som skyddar mot vardagliga stötar och repor. Designad för att kombinera funktion med estetik."
+  }
+]
