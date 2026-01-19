@@ -1,8 +1,11 @@
-import { useState, type FormEvent } from "react";
 
-// Login and Registration component
-export default function Auth() {
-  const [isRegistered, setIsRegistered] = useState(true); // Default view is login
+import { useState, type FormEvent } from "react";
+import { loginUser, createUser } from "./../utils/indexUtils";
+
+
+export default function Login() {
+  // Controlled form states
+  const [isRegistered, setIsRegistered] = useState(true); // Shows login form by default
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -10,75 +13,46 @@ export default function Auth() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  // Handle form submission. Async function, takes FormEvent as event parameter
+  // Async form submission handler, takes FormEvent as parameter
+  // Prevents default form submission behavior, i.e page reload
   const handleSubmit = async (e: FormEvent) => {
-    // Prevent default form submission behavior, i.e., page reload
     e.preventDefault();
 
-    // Check if passwords match during registration
+    // Validate password match on registration
     if (!isRegistered && password !== confirmPassword) {
       setMessage("Lösenorden matchar inte");
       return;
     }
 
-    // Try-catch block for error handling during fetch requests
+    // Try to login or register user
     try {
-      // When registered, perform login
       if (isRegistered) {
-        // Fetch request to Flask-AppBuilder login endpoint, wait for Promise
-        const res = await fetch("/api/login_customer", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        // Here is the response I Promised earlier
-        const data = await res.json();
-        // Debugging log
-        console.log("Response data:", data);
-
-        // If response is ok, the login was successful
-        if (res.ok) {
-          setMessage(`Inloggad som ${data.user.first_name}`);
-          // Save token to stay logged in (localStorage survives page reloads and browser restarts)
-          localStorage.setItem("token", data.token);
-          setEmail("");
-          setPassword("");
-        } else {
-          setMessage(data.message || "Fel email eller lösenord");
-        }
+        // LOGIN
+        const data = await loginUser(email, password);
+        localStorage.setItem("token", data.token);
+        setMessage(`Inloggad som ${data.user.first_name}`);
+        setEmail("");
+        setPassword("");
       } else {
         // REGISTER
-        const res = await fetch("/api/create_customer", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            first_name: firstName,
-            last_name: lastName,
-            email,
-            password,
-            username: email,
-            is_active: true,
-            roles: ["Public"],
-            groups: [],
-          }),
+        await createUser({
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          password,
         });
-        const data = await res.json();
-
-        if (res.ok) {
-          setMessage("Konto skapat! Du kan nu logga in.");
-          setIsRegistered(true); // byt direkt till login
-          setFirstName("");
-          setLastName("");
-          setEmail("");
-          setPassword("");
-          setConfirmPassword("");
-        } else {
-          setMessage(data.message || "Något gick fel vid registrering");
-        }
+        setMessage("Konto skapat! Du kan nu logga in.");
+        setIsRegistered(true);
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
       }
+    // Catch and display any errors
     } catch (err) {
       console.error(err);
-      setMessage("Serverfel, försök igen senare");
+      setMessage(err instanceof Error ? err.message : "Serverfel, försök igen senare");
     }
   };
 
@@ -147,7 +121,7 @@ export default function Auth() {
         </button>
       </form>
 
-      {message && <p className={`mt-2`}>{message}</p>}
+      {message && <p className="mt-2">{message}</p>}
 
       <p className="mt-4 text-sm text-base-muted">
         {isRegistered ? "Inte registrerad?" : "Har du redan konto?"}{" "}
