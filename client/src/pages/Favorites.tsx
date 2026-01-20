@@ -8,14 +8,22 @@ export default function Favorites() {
   const [products, setProducts] = useState<Product_T[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch('http://localhost:5000/products') // din backend
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data);
-        setLoading(false);
-      });
-  }, []);
+useEffect(() => {
+  fetch('/api/products')
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.json();
+    })
+    .then((data) => {
+      setProducts(data);
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error('Fetch error:', err);
+      setLoading(false);
+    });
+}, []);
+
 
   if (loading) {
     return <div>Laddar...</div>;
