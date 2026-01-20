@@ -1,140 +1,52 @@
-
-import { useState, type FormEvent } from "react";
-import { loginUser, createUser } from "./../utils/indexUtils";
-
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  // Controlled form states
-  const [isRegistered, setIsRegistered] = useState(true); // Shows login form by default
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  // Async form submission handler, takes FormEvent as parameter
-  // Prevents default form submission behavior, i.e page reload
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
 
-    // Validate password match on registration
-    if (!isRegistered && password !== confirmPassword) {
-      setMessage("Lösenorden matchar inte");
-      return;
-    }
-
-    // Try to login or register user
-    try {
-      if (isRegistered) {
-        // LOGIN
-        const data = await loginUser(email, password);
-        localStorage.setItem("token", data.token);
-        setMessage(`Inloggad som ${data.user.first_name}`);
-        setEmail("");
-        setPassword("");
-      } else {
-        // REGISTER
-        await createUser({
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          password,
-        });
-        setMessage("Konto skapat! Du kan nu logga in.");
-        setIsRegistered(true);
-        setFirstName("");
-        setLastName("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
-      }
-    // Catch and display any errors
-    } catch (err) {
-      console.error(err);
-      setMessage(err instanceof Error ? err.message : "Serverfel, försök igen senare");
+    if (data.success) {
+      navigate('/admin');
+    } else {
+      setError(data.error || 'Fel användarnamn eller lösenord');
     }
   };
 
+
   return (
-    <div className="max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-base-muted">
-        {isRegistered ? "Logga in" : "Skapa Kundkonto"}
-      </h2>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {!isRegistered && (
-          <>
-            <input
-              type="text"
-              placeholder="Förnamn"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-              className="p-2 border border-black rounded text-base-muted"
-            />
-            <input
-              type="text"
-              placeholder="Efternamn"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-              className="p-2 border border-black rounded text-base-muted"
-            />
-          </>
-        )}
-
+    <div className="flex justify-center items-center">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 p-6">
+        <h2 className="text-xl font-bold">Admin Login</h2>
         <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="p-2 border border-black rounded text-base-muted"
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className=" p-2 rounded text-base-muted"
         />
-
         <input
           type="password"
-          placeholder="Lösenord"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
-          className="p-2 border border-black rounded text-base-muted"
+          className=" p-2 rounded text-base-muted"
         />
-
-        {!isRegistered && (
-          <input
-            type="password"
-            placeholder="Bekräfta lösenord"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="p-2 border border-black rounded text-base-muted"
-          />
-        )}
-
-        <button
-          type="submit"
-          className="p-2 bg-base-surface border border-base-border text-black rounded hover:bg-base-hover transition"
-        >
-          {isRegistered ? "Logga in" : "Skapa konto"}
+        <button type="submit" className="bg-base-surface text-white p-2 rounded">
+          Logga in
         </button>
+        {error && <p className="text-red-500">{error}</p>}
       </form>
-
-      {message && <p className="mt-2">{message}</p>}
-
-      <p className="mt-4 text-sm text-base-muted">
-        {isRegistered ? "Inte registrerad?" : "Har du redan konto?"}{" "}
-        <button
-          onClick={() => {
-            setIsRegistered(!isRegistered);
-            setMessage("");
-          }}
-          className="text-blue-400 underline"
-        >
-          {isRegistered ? "Skapa konto" : "Logga in"}
-        </button>
-      </p>
     </div>
   );
 }
