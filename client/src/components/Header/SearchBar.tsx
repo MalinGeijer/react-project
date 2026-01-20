@@ -5,7 +5,7 @@ export default function SearchBar() {
   const { setSearchQuery } = useSearch();
 
   return (
-    <header className="siteHeader border-b border-base-border p-3">
+    <header className="border-base-border p-3">
       <div className="flex flex-row gap-2 items-center relative">
         <Search className="w-6 h-6 text-base-muted absolute right-2 pointer-events-none" />
         <input
