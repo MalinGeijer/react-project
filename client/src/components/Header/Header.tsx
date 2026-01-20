@@ -4,13 +4,9 @@ import { Heart, ShoppingCartIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useCart } from '../../context/CartContext';
-import { SearchBar } from './SearchBar';
+import SearchBar from './SearchBar';
 
-type HeaderProps = {
-  setSearchQuery: (q: string) => void;
-};
-
-export default function Header({ setSearchQuery }: HeaderProps) {
+export default function Header() {
   const { favorites } = useFavorites();
   const { cart } = useCart();
   const count = favorites.length;
@@ -25,7 +21,7 @@ export default function Header({ setSearchQuery }: HeaderProps) {
 
         <div className="flex flex-row items-center justify-between w-full gap-4">
           <div className="flex-1">
-            <SearchBar setSearchQuery={setSearchQuery} />
+            <SearchBar />
           </div>
 
           <div className="flex items-center gap-4">

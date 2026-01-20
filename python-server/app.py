@@ -79,7 +79,7 @@ def api_gallery():
 @app.route("/api/products")
 def api_products():
     q = request.args.get("q", "").strip().lower()
-    products = get_products()  # lista av dictar
+    products = get_products()  
 
     print("----- /api/products called -----")
     print("Query param:", q)
