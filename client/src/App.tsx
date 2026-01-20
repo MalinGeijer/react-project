@@ -10,6 +10,7 @@ import Play from './pages/Play';
 import Login from './pages/Login';
 import Product from './pages/Product';
 import Favorites from './pages/Favorites';
+import Cart from './pages/Cart';
 
 const router = createBrowserRouter([
   {
@@ -22,10 +23,8 @@ const router = createBrowserRouter([
       { path: '/play', element: <Play /> },
       { path: '/login', element: <Login /> },
       { path: '/favorites', element: <Favorites /> },
-
-      // Produktsida
+      { path: '/cart', element: <Cart /> },
       { path: '/product/:id', element: <Product /> },
-
       // 404 – alltid sist
       { path: '*', element: <h2>404 – Page not found</h2> },
     ],

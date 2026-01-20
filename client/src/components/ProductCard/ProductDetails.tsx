@@ -1,6 +1,7 @@
 import type { Product_T } from '../../utils/types';
 import { Heart } from 'lucide-react';
 import { useFavorites } from '../../context/FavoritesContext';
+import { useCart } from '../../context/CartContext';
 
 type ProductDetailsProps = Product_T;
 
@@ -14,6 +15,7 @@ export default function ProductDetails({
 }: ProductDetailsProps) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const favorite = isFavorite(id);
+  const { addToCart } = useCart();
 
   return (
     <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 bg-base-surface border border-base-border rounded-xl p-6">
@@ -43,7 +45,10 @@ export default function ProductDetails({
         <p className="text-lg font-medium">{price} kr</p>
         <p className="text-base">{description}</p>
 
-        <button className="mt-auto bg-base-muted text-black font-medium py-2 rounded-md hover:bg-base-hover transition">
+        <button
+          onClick={() => addToCart({ id, name, price, brand, image_url, description })}
+          className="mt-auto bg-base-muted text-black font-medium py-2 rounded-md hover:bg-base-hover transition"
+        >
           Köp
         </button>
       </div>

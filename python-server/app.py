@@ -78,7 +78,40 @@ def api_gallery():
 
 @app.route("/api/products")
 def api_products():
-    return jsonify(get_products())
+    q = request.args.get("q", "").strip().lower()
+    products = get_products()  # lista av dictar
+
+    print("----- /api/products called -----")
+    print("Query param:", q)
+    print("Total products in DB:", len(products))
+
+    if not q:
+        print("No query provided, returning all products")
+        return jsonify(products)
+
+    filtered = []
+
+    for p in products:
+        text_match = (
+            q in p["name"].lower()
+            or q in p["brand"].lower()
+            or q in p["description"].lower()
+        )
+
+        number_match = False
+        if q.isdigit():
+            number = int(q)
+            number_match = (
+                p.get("id") == number
+                or p.get("price") == number
+            )
+
+        if text_match or number_match:
+            filtered.append(p)
+            print(f"Matched product: {p['name']} (id={p['id']})")
+
+    print("Total matches:", len(filtered))
+    return jsonify(filtered)
 
 @app.route("/api/products/<int:product_id>")
 def api_product(product_id: int):

@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard/ProductCard';
 import type { Product_T } from '../utils/types';
 import Hero from '../components/Hero/Hero';
+import { useSearch } from '../context/SearchContext'; // ny import
 
-// Home component to display a grid of products
 export default function Home() {
-  // State to hold the list of products
   const [products, setProducts] = useState<Product_T[]>([]);
+  const { searchQuery } = useSearch(); // läs söktext från Header
 
-  // Fetch products when the component mounts (only once)
   useEffect(() => {
     fetch('/api/products')
       .then((res) => res.json())
@@ -16,13 +15,25 @@ export default function Home() {
       .catch((err) => console.error('Error fetching products:', err));
   }, []);
 
-  // Render the grid of ProductCard components
+  // Filtrera produkter baserat på searchQuery
+  const filteredProducts = products.filter((p) => {
+    const q = searchQuery.toLowerCase();
+    const textMatch =
+      p.name.toLowerCase().includes(q) ||
+      p.brand.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q);
+    const numberMatch =
+      !isNaN(Number(q)) && (p.id === Number(q) || p.price === Number(q));
+    return textMatch || numberMatch;
+  });
+
   return (
     <div className="grid grid-cols-1 mx-auto place-items-center md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 p-2">
-        <div className="col-span-full w-full">
-          <Hero />
-        </div>
-      {products.map((product) => (
+      <div className="col-span-full w-full">
+        <Hero />
+      </div>
+
+      {filteredProducts.map((product) => (
         <ProductCard
           key={product.id}
           id={product.id}
@@ -33,6 +44,12 @@ export default function Home() {
           description={product.description}
         />
       ))}
+
+      {filteredProducts.length === 0 && (
+        <div className="col-span-full text-center text-base-muted mt-10">
+          Inga produkter matchar din sökning
+        </div>
+      )}
     </div>
   );
 }
