@@ -8,7 +8,7 @@ IG_USER_ID = os.environ.get("IG_USER_ID")
 TOKEN = os.environ.get("IG_ACCESS_TOKEN")
 
 # Create/open the database
-conn = sqlite3.connect("gallery.db")
+conn = sqlite3.connect("../db/gallery.db")
 # Create a cursor object to execute SQL commands
 cursor = conn.cursor()
 # Create the table if it doesn't exist
@@ -39,7 +39,7 @@ def has_add2shop(caption):
 
 def insert_image(image_url):
     """Add a new image with the given image URL to the database."""
-    conn = sqlite3.connect("gallery.db")
+    conn = sqlite3.connect("../db/gallery.db")
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO gallery (media_url)

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard/ProductCard';
-import type { Product_T } from '../types/types';
+import type { Product_T } from '../utils/types';
 import Hero from '../components/Hero/Hero';
 
 // Home component to display a grid of products
@@ -12,7 +12,7 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/products')
       .then((res) => res.json())
-      .then((data: Product_T[]) => setProducts(data)) // <-- typning med Product_T[]
+      .then((data: Product_T[]) => setProducts(data))
       .catch((err) => console.error('Error fetching products:', err));
   }, []);
 
@@ -26,10 +26,10 @@ export default function Home() {
         <ProductCard
           key={product.id}
           id={product.id}
-          media_url={product.media_url}
           name={product.name}
           brand={product.brand}
           price={product.price}
+          image_url={product.image_url}
           description={product.description}
         />
       ))}

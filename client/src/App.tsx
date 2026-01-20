@@ -9,6 +9,7 @@ import Blog from './pages/Blog';
 import Play from './pages/Play';
 import Login from './pages/Login';
 import Product from './pages/Product';
+import Favorites from './pages/Favorites';
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,7 @@ const router = createBrowserRouter([
       { path: '/blog', element: <Blog /> },
       { path: '/play', element: <Play /> },
       { path: '/login', element: <Login /> },
+      { path: '/favorites', element: <Favorites /> },
 
       // Produktsida
       { path: '/product/:id', element: <Product /> },

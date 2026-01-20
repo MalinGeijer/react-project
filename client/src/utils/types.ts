@@ -1,9 +1,10 @@
+// TODO: Replace with interface
 export type Product_T = {
   id: number;
-  media_url: string;
   name: string;
   brand: string;
   price: number;
+  image_url: string;
   description: string;
 };
 
