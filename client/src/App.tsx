@@ -12,6 +12,7 @@ import Product from './pages/Product';
 import Favorites from './pages/Favorites';
 import Cart from './pages/Cart';
 import Admin from './pages/Admin';
+import Checkout from './pages/Checkout'
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
       { path: '/cart', element: <Cart /> },
       { path: '/product/:id', element: <Product /> },
       { path: '/admin', element: <Admin /> },
+      { path: '/checkout', element: < Checkout />},
       // 404 – alltid sist
       { path: '*', element: <h2>404 – Page not found</h2> },
     ],

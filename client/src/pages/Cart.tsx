@@ -1,4 +1,5 @@
 // src/pages/Cart.tsx
+import { Link, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 
@@ -94,10 +95,13 @@ export default function Cart() {
             <span>Totalt</span>
             <span>{total} kr</span>
           </div>
+          <Link
+            to="/checkout"
+            className="w-full bg-black text-white py-3 rounded-md text-center block"
+          >
+            Checkout
+          </Link>
 
-          <button className="w-full bg-black text-white py-3 rounded-md">
-            Till kassan
-          </button>
         </div>
       </div>
     </div>
