@@ -1,4 +1,5 @@
 import os
+import random
 
 # Flask is a lightweight web framework for Python. Is used to create a simple server
 # that can handle HTTP requests from the React frontend.
@@ -172,6 +173,14 @@ def api_delete_product(product_id: int):
     else:
         return jsonify({"error": "Product not found"}), 404
 
+@app.route("/api/products/random")
+def random_products():
+    try:
+        products = get_products()
+        selected = random.sample(products, k=min(6, len(products)))
+        return jsonify(selected)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # --------------------------------------------------
 # MAIN
