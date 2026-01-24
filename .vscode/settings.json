@@ -1,5 +1,14 @@
 {
+  "python.defaultInterpreterPath": "/home/malin/workspace/react-project/python-server/react-env/bin/python",
   "python.analysis.extraPaths": [
-    "./python-server/src"
+    "./python-server/src",
+    "/home/malin/workspace/react-project/python-server/react-env/lib/python3.10/site-packages"
+  ],
+  "python.analysis.include": [
+    "/home/malin/workspace/react-project/python-server/react-env/lib/python3.10/site-packages"
+  ],
+  "python.analysis.exclude": [
+    "**/node_modules",
+    "**/__pycache__"
   ]
 }

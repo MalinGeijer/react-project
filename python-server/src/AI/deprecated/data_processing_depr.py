@@ -3,8 +3,25 @@ import io
 import numpy as np
 from pathlib import Path
 from datetime import datetime
-from PIL import Image, ImageOps
+from PIL import Image
 
+"""
+Decodes a base64 image string and preprocesses it for MNIST-compatible input.
+
+Steps and rationale:
+
+1. Base64 decoding - converts the input string to raw image bytes.
+2. Grayscale conversion ('L' mode) - ensures a single luminance channel.
+3. Temporary inversion before crop - allows getbbox() to correctly detect the digit.
+4. Cropping using the bounding box - isolates the digit from empty space.
+5. Resizing using NEAREST interpolation - preserves sharp edges and avoids new gray levels.
+6. Creating a 28x28 canvas and pasting the resized digit centered - matches MNIST size and positioning.
+7. Inverting back after all operations - ensures the digit is light on a dark background, consistent with MNIST.
+8. Saving the resulting image and logging steps - useful for debugging and verification.
+
+Returns:
+    PIL.Image.Image: Preprocessed image ready for further processing or model input.
+"""
 def image_decode(base64_string: str, verbose: bool = True) -> Image.Image:
     """
     Takes a base64-encoded image string,
@@ -39,10 +56,6 @@ def image_decode(base64_string: str, verbose: bool = True) -> Image.Image:
         image = Image.open(io.BytesIO(image_bytes)).convert("L")
         _log(f"Image created: size={image.size}, mode={image.mode}(grayscale)")
 
-        # Invert colors for cropping to work correctly
-        image = Image.open(io.BytesIO(image_bytes)).convert("L")  # gråskala
-        image = ImageOps.invert(image)  # svart streck blir vitt
-
         # Crop to content
         bbox = image.getbbox()
         if bbox:
@@ -52,26 +65,38 @@ def image_decode(base64_string: str, verbose: bool = True) -> Image.Image:
             _log("No content found to crop – image is empty, raising exception")
             raise ValueError("Decoded image contains no visible content")
 
-        # Invert back to original colors
-        image = ImageOps.invert(image)
+        w, h = image.size
+        _log(f"Image size after cropping: width={w}, height={h}")
+        # Resize to fit within 20x20 box while maintaining aspect ratio
+        scale = 20.0 / max(w, h)
+        new_size = (int(w * scale), int(h * scale))
+        # Resize image using NEAREST to avoid introducing new gray levels
+        # Each new pixel gets the value of the nearest pixel from the original image
+        image = image.resize(new_size, Image.NEAREST)
+
+        # Create new grayscale 28x28 canvas, default color is black (0)
+        canvas = Image.new("L", (28, 28), 0)
+        # Find offset to center the image
+        offset = ((28 - new_size[0]) // 2, (28 - new_size[1]) // 2)
+        # Paste resized image onto the center of the canvas
+        canvas.paste(image, offset)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         filename = output_path / f"input_{timestamp}.png"
-        image.save(filename)
+        canvas.save(filename)
         _log(f"Image saved to {filename}")
         _log("Decoding completed")
 
-        return image
+        return canvas
 
     except Exception as e:
         _log(f"Error while decoding image: {e}")
         raise
 
 
-
 def process_image(image: Image.Image, save: bool = True, verbose: bool = True) -> np.ndarray:
     """
-    Converts a grayscale image to 28x28, normalizes it, flattens it,
+   normalizes it, flattens it,
     and optionally saves it to disk.
 
     Returns:
@@ -83,21 +108,8 @@ def process_image(image: Image.Image, save: bool = True, verbose: bool = True) -
             print(f"[process_image] {msg}")
 
     try:
-        # Resize image to 28x28
-        image_resized = image.resize((28, 28))
-        _log(f"Image resized to {image_resized.size}")
-
-        # Optionally save resized image
-        if save:
-            output_path = Path("processed_images")
-            output_path.mkdir(parents=True, exist_ok=True)
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-            filename = output_path / f"processed_{timestamp}.png"
-            image_resized.save(filename)
-            _log(f"Resized image saved to {filename}")
-
         # Convert to numpy array
-        img_array = np.array(image_resized, dtype=np.float32)
+        img_array = np.array(image, dtype=np.float32)
         _log(f"Converted to numpy array with shape {img_array.shape}")
 
         # Normalize pixel values to [0,1]
@@ -111,7 +123,7 @@ def process_image(image: Image.Image, save: bool = True, verbose: bool = True) -
         # Calculate and log mean
         mean_val = img_flat.mean()
 
-        _log(f"Normalized pixel values to [0,1], mean={mean_val:.4f}")
+        _log(f"Mean={mean_val:.4f}")
 
         return img_flat
 

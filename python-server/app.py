@@ -1,5 +1,17 @@
 import os
 import random
+import logging
+import joblib
+import keras
+import numpy as np
+from pathlib import Path as _Path
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # 0=ALL,1=INFO,2=WARNING,3=ERROR
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+logging.getLogger("absl").setLevel(logging.ERROR)
+logging.getLogger("tensorflow").setLevel(logging.ERROR)
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
+
 
 # Flask is a lightweight web framework for Python. Is used to create a simple server
 # that can handle HTTP requests from the React frontend.
@@ -7,12 +19,11 @@ import random
 # jsonify is used to send JSON responses back to the client
 # CORS is used to enable Cross-Origin Resource Sharing so that our React app
 # can communicate with this server even if hosted on different domains/ports.
-from flask import Flask, jsonify, request, abort
-from flask_cors import CORS
+from flask import Flask, jsonify, request
 from dotenv import load_dotenv
-from src.AI.data_processing import image_decode, process_image
 from src.utils.db_utils import get_gallery, get_products
-
+from src.AI.data_processor import DataProcessor
+from src.AI.predict import Predictor
 
 # --------------------------------------------------
 # Load environment variables
@@ -37,6 +48,63 @@ DB_PATH = os.path.join(DB_FOLDER, "shop.db")
 app = Flask(__name__)
 
 # --------------------------------------------------
+# Load ML models
+# --------------------------------------------------
+
+# Global variabler för modeller
+MODELS = {}
+
+def load_models():
+    """Ladda alla tränade modeller vid startup från src/AI/models"""
+    global MODELS
+    models_dir = _Path(__file__).resolve().parent / "src" / "AI" / "models"
+    MODELS = {}
+    loaded = []
+
+    if not models_dir.exists():
+        print(f"[APP] Models folder not found: {models_dir}")
+        return
+
+    # scikit-learn models
+    for name, fname in [("logistic_regression", "LogisticRegression_model.joblib"),
+                        ("random_forest", "RandomForest_model.joblib"),
+                        ("neural_network", "NeuralNetwork_model.h5")]:
+        path = models_dir / fname
+        if path.exists():
+            try:
+                if name != "neural_network":
+                    MODELS[name] = joblib.load(path)
+                else:
+                    MODELS[name] = keras.models.load_model(path)
+                loaded.append(name)
+            except Exception as e:
+                print(f"[APP] Failed to load {fname}: {e}")
+                MODELS[name] = None
+        else:
+            MODELS[name] = None
+
+    # TensorFlow / Keras model
+    # nn_path = models_dir / "NeuralNetwork_model.h5"
+    # if nn_path.exists():
+    #     try:
+    #         from tensorflow import keras
+    #         MODELS["neural_network"] = keras.models.load_model(nn_path)
+    #         loaded.append("neural_network")
+    #     except ImportError:
+    #         print("[APP] TensorFlow not installed — skipping neural_network")
+    #         MODELS["neural_network"] = None
+    #     except Exception as e:
+    #         print(f"[APP] Failed to load NeuralNetwork_model.h5: {e}")
+    #         MODELS["neural_network"] = None
+    # else:
+    #     MODELS["neural_network"] = None
+
+    print("[APP] Models loaded:", loaded)
+
+# Call once at startup
+load_models()
+
+# --------------------------------------------------
 # Routes
 # --------------------------------------------------
 # Basic GET route to check if the servers status
@@ -47,33 +115,33 @@ def health():
 @app.route("/api/predict", methods=["POST"])
 def predict():
     # Get the JSON data from the request
-    data = request.get_json(silent=True)
+    data = request.get_json(silent=True) or {}
     # Get the base64 encoded image string
     image = data.get("image", "")
 
-    # Check that JSON exists
+    model_name = data.get("model", "logistic_regression")
+    print(f"[APP] Predict request received: model={model_name}")
+    model_obj = MODELS.get(model_name)
+
     if data is None:
         return jsonify({"error": "Invalid or missing JSON"}), 400
-
-    # Check that image field exists
     if not image:
         return jsonify({"error": "No image provided"}), 400
+    if model_name not in MODELS:
+        return jsonify({"error": f"Model '{model_name}' not available", "models_loaded": list(MODELS.keys())}), 400
+    model = MODELS.get(model_name)
+    if model is None:
+        return jsonify({"error": f"Model '{model_name}' failed to load or is unavailable"}), 500
 
-    # Optional sanity check
-    if image is None:
-        return jsonify({"error": "Image is empty"}), 400
+    # Process the image
+    pre_processed_img = DataProcessor().pre_process(image)
+    prediction_probabilities = Predictor().predict(model_obj, pre_processed_img)
 
-    # Decode base64 → PIL image
-    pil_image = image_decode(image, verbose=True)
-
-    # Process PIL image → flattenad NumPy array
-    img_flat = process_image(pil_image, save=True, verbose=True)
-
-    # TODO: Return prediction statistics and plots (seaborn/matplotlib)
     return jsonify({
-        "status": "TBD",
-        "type": type(image).__name__
-    }), 200
+        "predicted_digit": int(np.argmax(prediction_probabilities)),
+        "confidence": float(np.max(prediction_probabilities)),
+        "probabilities": [{"digit": i, "prob": float(prediction_probabilities[i])} for i in range(10)],
+        "model_used": model_name})
 
 @app.route("/api/gallery")
 def api_gallery():
@@ -84,12 +152,7 @@ def api_products():
     q = request.args.get("q", "").strip().lower()
     products = get_products()
 
-    print("----- /api/products called -----")
-    print("Query param:", q)
-    print("Total products in DB:", len(products))
-
     if not q:
-        print("No query provided, returning all products")
         return jsonify(products)
 
     filtered = []
@@ -111,9 +174,9 @@ def api_products():
 
         if text_match or number_match:
             filtered.append(p)
-            print(f"Matched product: {p['name']} (id={p['id']})")
+            print(f"[APP] Matched product: {p['name']} (id={p['id']})")
 
-    print("Total matches:", len(filtered))
+    print(f"[APP] Total matches: {len(filtered)}")
     return jsonify(filtered)
 
 @app.route("/api/products/<int:product_id>")

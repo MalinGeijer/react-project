@@ -2,8 +2,8 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "React Console",
-      "type": "chrome",      // eller "pwa-msedge"
+      "name": "React (Firefox)",
+      "type": "firefox",      // eller "pwa-msedge" eller "chrome"
       "request": "launch",
       "url": "http://localhost:5173",
       "webRoot": "${workspaceFolder}/src"

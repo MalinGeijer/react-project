@@ -10,7 +10,10 @@ export default function CanvasPredict() {
   // Create a state variable to track if the user is currently drawing.
   const [isDrawing, setIsDrawing] = useState(false);
   // Create a state variable to hold the response from the backend.
-  const [response, setResponse] = useState<string | null>(null);
+  const [result, setResult] = useState<any | null>(null);
+
+  // Model selection
+  const [model, setModel] = useState<string>("logistic_regression");
 
 
   // Set up the canvas when the component mounts. Only runs once.
@@ -22,12 +25,12 @@ export default function CanvasPredict() {
       const ctx = canvas.getContext("2d");
       if (ctx) {
         // Background
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "black";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Drawing styles
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 20;
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 25;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
@@ -66,7 +69,7 @@ export default function CanvasPredict() {
   // Function to clear the canvas by filling it with black color.
   const clearCanvas = () => {
     if (!ctxRef.current || !canvasRef.current) return;
-    ctxRef.current.fillStyle = "white";
+    ctxRef.current.fillStyle = "black";
     ctxRef.current.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
   };
 
@@ -82,8 +85,10 @@ const predictNumber = async () => {
     const res = await fetch("/api/predict", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image }),
+      body: JSON.stringify({ image, model }),
     });
+
+    console.log("Sending image to backend for prediction, model=", model)
 
     // Check if the response is OK (status code 200-299).
     if (!res.ok) {
@@ -92,9 +97,9 @@ const predictNumber = async () => {
 
     // Parse the JSON response from the backend.
     const data = await res.json();
-    setResponse(data.status);
+    setResult(data);
   } catch (err) {
-    setResponse("Error contacting backend");
+    setResult({ error: "Error contacting backend" });
     console.error(err);
   }
 };
@@ -117,9 +122,21 @@ const predictNumber = async () => {
         className="rounded-lg border-2 border-gray-500 cursor-crosshair"
       />
 
-      {/* Implement drop-down menu for selecting machine learning model */}
+      {/* Model selection */}
+      <div className="mt-4 flex items-center space-x-4">
+        <label className="text-sm">Model:</label>
+        <select
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          className="bg-gray-800 text-white px-2 py-1 rounded">
+          <option value="logistic_regression">Logistic Regression</option>
+          <option value="random_forest">Random Forest</option>
+          <option value="neural_network">Neural Network</option>
+        </select>
 
-      <div className="mt-4 flex space-x-4">
+        <div className="ml-4" />
+
+        <div className="mt-0 flex space-x-4">
         <button
           onClick={clearCanvas}
           className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
@@ -132,9 +149,35 @@ const predictNumber = async () => {
           Predict
         </button>
       </div>
+      </div>
 
-      {response && (
-        <p className="mt-4 text-2xl text-white font-semibold">Du skrev siffran {response}</p>
+      {/* Prediction result */}
+      {result && (
+        <div className="mt-4 text-white">
+          {result.error ? (
+            <p className="text-red-400">Fel: {result.error}</p>
+          ) : (
+            <>
+              <p className="text-2xl font-semibold">Predicted: {result.predicted_digit}</p>
+              {result.confidence != null && (
+                <p className="text-sm">Confidence: {(result.confidence * 100).toFixed(1)}%</p>
+              )}
+
+              {result.probabilities && result.probabilities.length > 0 && (
+                <div className="mt-2">
+                  <p className="font-medium">Top probabilities:</p>
+                  <ul className="list-disc list-inside text-sm">
+                    {result.probabilities.map((p: any) => (
+                      <li key={p.digit}>{p.digit}: {(p.prob * 100).toFixed(2)}%</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <p className="text-xs mt-2 text-gray-300">Model used: {result.model_used}</p>
+            </>
+          )}
+        </div>
       )}
 
       {/* Plots and statistics */}
