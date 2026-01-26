@@ -7,6 +7,3 @@ __pycache__/
 # Virtual env
 react-env/
 .env
-
-logs/processed_images/
-
