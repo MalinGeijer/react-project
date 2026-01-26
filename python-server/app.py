@@ -19,7 +19,7 @@ from flask import Flask, jsonify, request
 from dotenv import load_dotenv
 from src.utils.db_utils import get_gallery, get_products
 from src.AI.predict_number import predict_number_from_request
-from src.AI.src.models import load_models
+from src.AI.models import load_models
 
 # --------------------------------------------------
 # Flask app
