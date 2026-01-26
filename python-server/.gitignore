@@ -4,16 +4,9 @@ __pycache__/
 # Jupyter
 .ipynb_checkpoints/
 
-
-# ML data
-*.npy
-*.pkl
-*.h5
-*.onnx
-
 # Virtual env
 react-env/
 .env
 
-processed_images/
-test_images/
+logs/processed_images/
+

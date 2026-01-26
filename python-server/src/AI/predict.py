@@ -38,12 +38,10 @@ class Predictor:
       # input_data shape: (784,), 1 row med 784 element (no sample dimension)
       # Reshape to (1, 784), 1 row withe 784 columns representing one sample
       data = input_data.reshape(1, -1)
-      data_keras = input_data.reshape(1, 28, 28)
-
 
       # Make prediction for the single sample
       if isinstance(model, tf.keras.Model):
-          probabilities = model.predict(data_keras)[0]
+          probabilities = model.predict(data)[0]
       else:
           probabilities = model.predict_proba(data)[0]
 

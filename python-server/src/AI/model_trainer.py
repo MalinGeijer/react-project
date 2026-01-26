@@ -1,28 +1,40 @@
 import os
+import sys
+import logging
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.callbacks import CSVLogger
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from joblib import dump
-import numpy as np
-
-from tensorflow import keras
-from keras.datasets import mnist
-from keras.models import Sequential
-from keras.layers import Dense, Flatten
+from data_processor import DataProcessor
 
 class ModelTrainer:
     """
-    Handles training and prediction using different models on the MNIST dataset.
+    Class to train different ML models on the MNIST dataset.
 
-    Supported models:
-        - Logistic Regression ("LR")
-        - Random Forest ("RF")
-        - Multi-layer Perceptron Neural Network ("MLP")
+    Args:
+        model_name (str): Model to train: "LR" (LogisticRegression), "RF" (RandomForest), "MLP" (NeuralNetwork).
+        train_size (int): Number of training samples.
+        iterations (int): Number of iterations (for LR).
+        trees (int): Number of trees (for RF).
+        epochs (int): Number of epochs (for MLP).
+        random_state (int): Random seed for reproducibility.
     """
 
     MODEL_NAMES = {
         "LR": "LogisticRegression",
         "RF": "RandomForest",
         "MLP": "NeuralNetwork",
+    }
+
+    LOG_FILENAMES = {
+        "LogisticRegression": "logs/logistic_regression.log",
+        "RandomForest": "logs/random_forest.log",
+        "NeuralNetwork": "logs/neural_network.log"
     }
 
     def __init__(self,
@@ -42,16 +54,41 @@ class ModelTrainer:
 
         self.full_name = self.MODEL_NAMES.get(model_name, "Unknown Model")
 
+        # Setup logging
+        os.makedirs("logs", exist_ok=True)
+        log_file = self.LOG_FILENAMES[self.full_name]
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s [%(levelname)s] %(message)s",
+            handlers=[
+                logging.FileHandler(log_file, mode='w'),  # skriv över filen
+                logging.StreamHandler(sys.stdout)
+            ]
+        )
+        self.logger = logging.getLogger(self.full_name)
+        self.logger.info(f"Initializing ModelTrainer for {self.full_name}")
+
+        # Initialize model
         if model_name == "LR":
-            self.model = LogisticRegression(max_iter=iterations, random_state=random_state)
+            self.model = LogisticRegression(
+                solver='saga',
+                max_iter=self.iterations,
+                tol=1e-3, # stops earlier if converged
+                random_state=self.random_state,
+                n_jobs=-1,
+                verbose=1
+            )
         elif model_name == "RF":
-            self.model = RandomForestClassifier(n_estimators=trees, random_state=random_state)
+            self.model = RandomForestClassifier(
+                n_estimators=self.trees,
+                random_state=self.random_state,
+                n_jobs=-1,
+                verbose=1
+            )
         elif model_name == "MLP":
-            # Keras Sequential MLP
             self.model = Sequential([
-                Flatten(input_shape=(28,28)),
-                Dense(128, activation='relu'),
-                Dense(10, activation='softmax')  # 10 klasser för MNIST
+                Dense(128, activation='relu', input_shape=(784,)),
+                Dense(10, activation='softmax')
             ])
             self.model.compile(
                 optimizer='adam',
@@ -62,32 +99,46 @@ class ModelTrainer:
             raise ValueError(f"Model '{self.full_name}' is not supported")
 
     def train_on_mnist(self):
-        """
-        Loads MNIST dataset, normalizes it, trains the model, and saves it.
-        """
-        # Load MNIST
+        """Train the selected model on MNIST and log output."""
+        self.logger.info(f"Loading MNIST dataset...")
         (x_train, y_train), (_, _) = mnist.load_data()
         x_train = x_train[:self.train_size]
         y_train = y_train[:self.train_size]
 
-        # Normalize images
-        x_train = x_train.astype("float32") / 255.0
+        self.logger.info(f"Preprocessing {len(x_train)} images...")
+        dp = DataProcessor(verbose=False)
+        x_train_processed = []
+        for arr in x_train:
+            img = dp.convert_np_array_to_image(arr)
+            img = dp.resize_and_center_image(img)
+            img = dp.normalize_and_flatten_image(img)
+            x_train_processed.append(img)
+        x_train_processed = np.array(x_train_processed, dtype=np.float32)
 
-        print(f"Training {self.full_name} on {x_train.shape[0]} samples...")
+        self.logger.info(f"Starting training on {x_train_processed.shape[0]} samples...")
 
-        # Train
+        os.makedirs("models", exist_ok=True)
         if self.full_name in ["LogisticRegression", "RandomForest"]:
-            X_train = x_train.reshape(x_train.shape[0], -1)
-            self.model.fit(X_train, y_train)
-            os.makedirs("models", exist_ok=True)
-            file_path = os.path.join("models", f"{self.full_name}_model.joblib")
+            # Sklearn verbose output går till stdout och loggfil
+            import contextlib
+            log_path = self.LOG_FILENAMES[self.full_name]
+            with open(log_path, "a") as f, contextlib.redirect_stdout(f):
+                self.model.fit(x_train_processed, y_train)
+            file_path = os.path.join("models", f"{self.full_name}.joblib")
             dump(self.model, file_path)
-        else:  # NeuralNetwork (Keras)
-            self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=32, verbose=1)
-            os.makedirs("models", exist_ok=True)
-            file_path = os.path.join("models", f"{self.full_name}_model.h5")
+        else:  # NeuralNetwork
+            csv_logger = CSVLogger(self.LOG_FILENAMES[self.full_name])
+            self.model.fit(
+                x_train_processed,
+                y_train,
+                epochs=self.epochs,
+                batch_size=32,
+                verbose=1,
+                callbacks=[csv_logger]
+            )
+            file_path = os.path.join("models", f"{self.full_name}.h5")
             self.model.save(file_path)
 
         self.is_trained = True
-        print(f"Model saved to {file_path}")
+        self.logger.info(f"Training finished. Model saved to {file_path}")
         return file_path
