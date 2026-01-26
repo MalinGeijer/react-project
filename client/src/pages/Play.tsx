@@ -30,7 +30,7 @@ export default function CanvasPredict() {
 
         // Drawing styles
         ctx.strokeStyle = "white";
-        ctx.lineWidth = 25;
+        ctx.lineWidth = 40;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 

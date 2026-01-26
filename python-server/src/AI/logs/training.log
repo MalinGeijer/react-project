@@ -1,4 +1,0 @@
-2026-01-24 14:23:33,030 [INFO] Starting training: model=LR, samples=60000, iterations=500, trees=300, epochs=20
-2026-01-24 14:25:21,336 [INFO] Starting training: model=MLP, samples=60000, iterations=500, trees=300, epochs=20
-2026-01-24 14:27:08,698 [WARNING] You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
-2026-01-24 14:27:08,729 [INFO] Saved model: models/NeuralNetwork_model.h5
