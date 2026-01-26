@@ -4,6 +4,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 from PIL import Image
+from scipy import ndimage
 
 class DataProcessor:
     """
@@ -104,6 +105,10 @@ class DataProcessor:
         Returns:
             Image.Image: Processed PIL Image.
         """
+        # Convert to grayscale
+        image = image.convert("L")
+        self._log("Converted image to grayscale")
+
         # Crop to content
         bbox = image.getbbox()
         if bbox:
@@ -127,10 +132,28 @@ class DataProcessor:
         canvas = Image.new("L", (28, 28), 0)
         # Find offset to center the image
         offset = ((28 - new_size[0]) // 2, (28 - new_size[1]) // 2)
+        self._log(f"Offset for centering: {offset}")
         # Content centered to new canavas size
         self._log(f'Image resized to {canvas.size}')
         # Paste resized image onto the center of the canvas
         canvas.paste(image, offset)
+
+        # center of mass centering (MNIST-style)
+        canvas_np = np.array(canvas)
+        cy, cx = ndimage.center_of_mass(canvas_np)
+
+        shift_x = int(round(14 - cx))
+        shift_y = int(round(14 - cy))
+
+        canvas_np = ndimage.shift(
+            canvas_np,
+            shift=(shift_y, shift_x),
+            order=0,
+            mode="constant",
+            cval=0
+        )
+
+        canvas = Image.fromarray(canvas_np)
 
         # Save for debugging
         output_path = self.save_dir / "resized_centered_image.png"

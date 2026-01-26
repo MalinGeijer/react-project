@@ -13,7 +13,7 @@ def load_models(models: dict):
 
     print("Loading models...")
 
-    models_dir = Path(__file__).parent.parent / "models"
+    models_dir = Path(__file__).parent/ "models"
 
     # ---- scikit-learn / classical ML models ----
     models["logistic_regression"] = joblib.load(
