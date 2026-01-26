@@ -1,6 +1,7 @@
 import base64
 import io
 import numpy as np
+import inspect
 from pathlib import Path
 from datetime import datetime
 from PIL import Image
@@ -38,7 +39,10 @@ class DataProcessor:
     def _log(self, msg):
         """Print log message if verbose is enabled."""
         if self.verbose:
-            print(f"[DataProcessor] {msg}")
+            # fetch the name of the caller function
+            caller_frame = inspect.currentframe().f_back
+            caller_name = caller_frame.f_code.co_name
+            print(f"[{caller_name}] {msg}")
 
     def convert_np_array_to_image(self, array: np.ndarray) -> Image.Image:
         """
@@ -141,6 +145,7 @@ class DataProcessor:
         # center of mass centering (MNIST-style)
         canvas_np = np.array(canvas)
         cy, cx = ndimage.center_of_mass(canvas_np)
+        self._log(f"Center of mass: ({cx}, {cy})")
 
         shift_x = int(round(14 - cx))
         shift_y = int(round(14 - cy))
