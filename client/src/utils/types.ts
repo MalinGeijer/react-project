@@ -29,3 +29,9 @@ export type LoginResponse = {
   };
 };
 
+export type PredictionResult = {
+  predicted_digit?: number;
+  confidence?: number;
+  probabilities?: { digit: number; prob: number }[];
+  error?: string;
+};

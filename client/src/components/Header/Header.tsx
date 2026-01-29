@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useCart } from '../../context/CartContext';
 import SearchBar from './SearchBar';
+import { log } from '../../utils/logger';
 
 export default function Header() {
   const { favorites } = useFavorites();
@@ -13,7 +14,7 @@ export default function Header() {
   const cartCount = cart.reduce((sum, p) => sum + p.quantity, 0);
 
   // Logga till konsolen
-  console.log('Header rendered');
+  log('Header rendered');
 
   return (
     <header className="siteHeader border-b border-base-border">

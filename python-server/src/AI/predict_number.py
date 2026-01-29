@@ -38,6 +38,10 @@ def predict_number_from_request(data, MODELS):
     # Predict
     prediction_probabilities = Predictor().predict(model_obj, image_normalized)
 
+    # Normalize probabilities to sum to 1
+    # prediction_probabilities = prediction_probabilities / np.sum(prediction_probabilities)
+    # print(Sannolikheterna summerar till 1 och representerar en normaliserad sannolikhetsfördelning.)
+
     # Build response
     response = {
         "predicted_digit": int(np.argmax(prediction_probabilities)),
