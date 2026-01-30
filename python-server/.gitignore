@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
 # Jupyter
 .ipynb_checkpoints/
@@ -8,3 +10,8 @@ __pycache__/
 react-env/
 venv/
 .env
+
+# TensorFlow / large binaries
+*.so
+*.dll
+*.dylib
