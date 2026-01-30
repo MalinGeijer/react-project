@@ -1,3 +1,4 @@
+# python-server/src/utils/data_processor.py
 import base64
 import io
 import numpy as np
@@ -6,6 +7,8 @@ from pathlib import Path
 from datetime import datetime
 from PIL import Image
 from scipy import ndimage
+from .logger import log
+from src.config import VERBOSE
 
 class DataProcessor:
     """
@@ -24,7 +27,7 @@ class DataProcessor:
         verbose (bool): If True, prints debug messages.
     """
 
-    def __init__(self, save_dir="src/AI/images", verbose=True):
+    def __init__(self, save_dir="images", verbose=None):
         """
         Initialize the DataProcessor.
 
@@ -34,15 +37,7 @@ class DataProcessor:
         """
         self.save_dir = Path(save_dir)
         self.save_dir.mkdir(parents=True, exist_ok=True)
-        self.verbose = verbose
-
-    def _log(self, msg):
-        """Print log message if verbose is enabled."""
-        if self.verbose:
-            # fetch the name of the caller function
-            caller_frame = inspect.currentframe().f_back
-            caller_name = caller_frame.f_code.co_name
-            print(f"[{caller_name}] {msg}")
+        self.verbose = verbose if verbose is not None else VERBOSE
 
     def convert_np_array_to_image(self, array: np.ndarray) -> Image.Image:
         """
@@ -63,7 +58,7 @@ class DataProcessor:
 
         # Create PIL Image
         image = Image.fromarray(image_array, mode='L')
-        self._log("Converted numpy array back to PIL Image")
+        log("Converted numpy array back to PIL Image", caller="DataProcessor", verbose=self.verbose)
 
         return image
 
@@ -79,23 +74,21 @@ class DataProcessor:
         # Remove header if present (e.g., "data:image/png;base64,")
         if "," in base64_string:
             header, data = base64_string.split(",", 1)
-            self._log(f"Header removed: {header}")
+            log(f"Header removed: {header}", caller="DataProcessor", verbose=self.verbose)
         else:
             data = base64_string
 
         # Convert Base64 string to bytes
         image_bytes = base64.b64decode(data)
-        self._log("Converted Base64 string to bytes")
+        log("Converted Base64 string to bytes", caller="DataProcessor", verbose=self.verbose)
 
         # Create a PIL Image
         image = Image.open(io.BytesIO(image_bytes))
-        self._log(f"Image created: size={image.size}, mode={image.mode}")
-
+        log(f"Image created: size={image.size}, mode={image.mode}", caller="DataProcessor", verbose=self.verbose)
         # Save for debugging
         output_path = self.save_dir / "decoded_image.png"
         image.save(output_path)
-        self._log(f"Decoded image saved to {output_path}")
-
+        log(f"Decoded image saved to {output_path}", caller="DataProcessor", verbose=self.verbose)
         return image
 
     def resize_and_center_image(self, image: Image.Image) -> Image.Image:
@@ -111,23 +104,23 @@ class DataProcessor:
         """
         # Convert to grayscale
         image = image.convert("L")
-        self._log("Converted image to grayscale")
+        log("Converted image to grayscale", caller="DataProcessor", verbose=self.verbose)
 
         # Crop to content
         bbox = image.getbbox()
         if bbox:
           image = image.crop(bbox)
-          self._log(f"Image cropped to bbox: {bbox}")
+          log(f"Image cropped to bbox: {bbox}", caller="DataProcessor", verbose=self.verbose)
         else:
             raise ValueError("Decoded image contains no visible content")
 
         w, h = image.size
-        self._log(f"Image size after cropping: width={w}, height={h}")
+        log(f"Image size after cropping: width={w}, height={h}", caller="DataProcessor", verbose=self.verbose)
         # Resize to fit within 20x20 box while maintaining aspect ratio
         scale = 20.0 / max(w, h)
         new_size = (int(w * scale), int(h * scale))
         # Content rescaled size
-        self._log(f"Content rescaled to: {new_size}")
+        log(f"Content rescaled to: {new_size}", caller="DataProcessor", verbose=self.verbose)
         # Resize image using NEAREST to avoid introducing new gray levels
         # Each new pixel gets the value of the nearest pixel from the original image
         image = image.resize(new_size, Image.NEAREST)
@@ -136,16 +129,16 @@ class DataProcessor:
         canvas = Image.new("L", (28, 28), 0)
         # Find offset to center the image
         offset = ((28 - new_size[0]) // 2, (28 - new_size[1]) // 2)
-        self._log(f"Offset for centering: {offset}")
+        log(f"Offset for centering: {offset}", caller="DataProcessor", verbose=self.verbose)
         # Content centered to new canavas size
-        self._log(f'Image resized to {canvas.size}')
+        log(f'Image resized to {canvas.size}', caller="DataProcessor", verbose=self.verbose)
         # Paste resized image onto the center of the canvas
         canvas.paste(image, offset)
 
         # center of mass centering (MNIST-style)
         canvas_np = np.array(canvas)
         cy, cx = ndimage.center_of_mass(canvas_np)
-        self._log(f"Center of mass: ({cx}, {cy})")
+        log(f"Center of mass: ({cx}, {cy})", caller="DataProcessor", verbose=self.verbose)
 
         shift_x = int(round(14 - cx))
         shift_y = int(round(14 - cy))
@@ -163,7 +156,7 @@ class DataProcessor:
         # Save for debugging
         output_path = self.save_dir / "resized_centered_image.png"
         canvas.save(output_path)
-        self._log(f"Resized and centered image saved to {output_path}")
+        log(f"Resized and centered image saved to {output_path}", caller="DataProcessor", verbose=self.verbose)
 
         return canvas
 
@@ -178,14 +171,13 @@ class DataProcessor:
         """
         # Convert to numpy array
         image_array = np.array(image, dtype=np.float32)
-        self._log("Converted image to numpy array")
+        log("Converted image to numpy array", caller="DataProcessor", verbose=self.verbose)
 
         # Normalize to [0, 1]
         image_array /= 255.0
-        self._log("Normalized pixel values to [0, 1]")
-
+        log("Normalized pixel values to [0, 1]", caller="DataProcessor", verbose=self.verbose)
         # Flatten to 1D array
         flattened_array = image_array.flatten()
-        self._log("Flattened image to 1D array")
+        log("Flattened image to 1D array", caller="DataProcessor", verbose=self.verbose)
 
         return flattened_array

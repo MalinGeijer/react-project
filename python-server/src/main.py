@@ -1,25 +1,20 @@
 import os
 import random
 import logging
+from src.utils.logger import log
+from src.config import VERBOSE
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # 0=ALL,1=INFO,2=WARNING,3=ERROR
-# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-logging.getLogger("absl").setLevel(logging.ERROR)
-# logging.getLogger("tensorflow").setLevel(logging.ERROR)
+# Suppress Flask's default logging to keep the output clean
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
 
-# Flask is a lightweight web framework for Python. Is used to create a simple server
-# that can handle HTTP requests from the React frontend.
-# request is used to handle incoming HTTP requests
-# jsonify is used to send JSON responses back to the client
-# CORS is used to enable Cross-Origin Resource Sharing so that our React app
-# can communicate with this server even if hosted on different domains/ports.
+# - Flask is a lightweight web framework for Python. Is used to create a simple server
+#   that can handle HTTP requests from the React frontend.
+# - request is used to handle incoming HTTP requests
+# - jsonify is used to send JSON responses back to the client
 from flask import Flask, jsonify, request
 from dotenv import load_dotenv
-from src.utils.db_utils import get_gallery, get_products
-from src.AI.predict_number import predict_number_from_request
-from src.AI.models import load_models
+from src import loader, predict_number_from_request, get_gallery, get_products, delete_product
 
 # --------------------------------------------------
 # Flask app
@@ -29,14 +24,14 @@ app = Flask(__name__)
 # --------------------------------------------------
 # Load ML models
 # --------------------------------------------------
-# GLOBAL STATE – ägs av app.py
 MODELS = {}
-load_models(MODELS)
+# loader(MODELS, verbose=True)
 
 # --------------------------------------------------
 # Load environment variables
 # --------------------------------------------------
 load_dotenv()
+log("Environment variables loaded", caller="App", verbose=True)
 IG_USER_ID = os.environ.get("IG_USER_ID")
 TOKEN = os.environ.get("IG_ACCESS_TOKEN")
 ADMIN_USER = os.environ.get("REACT_APP_ADMIN_USER")
@@ -45,8 +40,10 @@ ADMIN_PASS = os.environ.get("REACT_APP_ADMIN_PASS")
 # --------------------------------------------------
 # Paths
 # --------------------------------------------------
+# Absolute path to the directory where this main.py file is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_FOLDER = os.path.join(BASE_DIR, "data", "db")
+PARENT_DIR = os.path.dirname(BASE_DIR)
+DB_FOLDER = os.path.join(PARENT_DIR, "data", "db")
 os.makedirs(DB_FOLDER, exist_ok=True)
 DB_PATH = os.path.join(DB_FOLDER, "shop.db")
 
@@ -61,17 +58,19 @@ def health():
 
 @app.route("/api/predict", methods=["POST"])
 def predict():
+    log("/api/predict called", caller="App", verbose=VERBOSE)
     # Get the JSON data from the request
     data = request.get_json(silent=True) or {}
-    print("/api/predict called")
     return predict_number_from_request(data, MODELS)
 
 @app.route("/api/gallery")
 def api_gallery():
+    log("/api/gallery called", caller="App", verbose=VERBOSE)
     return jsonify(get_gallery())
 
 @app.route("/api/products")
 def api_products():
+    log("/api/products called", caller="App", verbose=VERBOSE)
     q = request.args.get("q", "").strip().lower()
     products = get_products()
 
@@ -97,14 +96,15 @@ def api_products():
 
         if text_match or number_match:
             filtered.append(p)
-            print(f"[APP] Matched product: {p['name']} (id={p['id']})")
+            log(f"Matched product: {p['name']} (id={p['id']})", caller="App", verbose=VERBOSE)
 
-    print(f"[APP] Total matches: {len(filtered)}")
+    log(f"Total matches: {len(filtered)}", caller="App", verbose=VERBOSE)
     return jsonify(filtered)
 
 @app.route("/api/products/<int:product_id>")
 def api_product(product_id: int):
     """Return a single product by id or 404 if not found."""
+    log(f"/api/products/{product_id} called", caller="App", verbose=VERBOSE)
     products = get_products()
     for p in products:
         if p.get("id") == product_id:
@@ -114,6 +114,7 @@ def api_product(product_id: int):
 @app.route("/api/login", methods=["POST"])
 def api_login():
     data = request.get_json(silent=True)
+    log("/api/login called", caller="App", verbose=VERBOSE)
     username = data.get("username", "")
     password = data.get("password", "")
 
@@ -124,6 +125,7 @@ def api_login():
 @app.route("/api/products", methods=["POST"])
 def api_add_product():
     data = request.get_json()
+    log("/api/products POST called", caller="App", verbose=VERBOSE)
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
@@ -147,7 +149,7 @@ def api_add_product():
 
 @app.route("/api/products/<int:product_id>", methods=["DELETE"])
 def api_delete_product(product_id: int):
-    from src.utils.db_utils import delete_product
+    log(f"/api/products/{product_id} DELETE called", caller="App", verbose=VERBOSE)
     success = delete_product(product_id)
     if success:
         return jsonify({"success": True})
@@ -156,6 +158,7 @@ def api_delete_product(product_id: int):
 
 @app.route("/api/products/random")
 def random_products():
+    log("/api/products/random called", caller="App", verbose=VERBOSE)
     try:
         products = get_products()
         selected = random.sample(products, k=min(6, len(products)))
@@ -169,4 +172,5 @@ def random_products():
 if __name__ == "__main__":
     # Start the Flask development server on port 5000
     # debug=True reloads the server automatically when files change
+    log("Starting Flask server on port 5000", caller="App", verbose=True)
     app.run(host="0.0.0.0", port=5000)

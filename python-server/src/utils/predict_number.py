@@ -1,7 +1,8 @@
 import numpy as np
 from flask import jsonify
-from src.AI.data_processor import DataProcessor
-from src.AI.predict import Predictor
+from .data_processor import DataProcessor
+from .predict import Predictor
+from src.config import VERBOSE
 
 def predict_number_from_request(data, MODELS):
     """
@@ -30,13 +31,13 @@ def predict_number_from_request(data, MODELS):
         }), 500
 
     # Process the image
-    dp = DataProcessor()
+    dp = DataProcessor(verbose=VERBOSE)
     image_pil = dp.decode_base64_image(image)
     image_resized = dp.resize_and_center_image(image_pil)
     image_normalized = dp.normalize_and_flatten_image(image_resized)
 
     # Predict
-    prediction_probabilities = Predictor().predict(model_obj, image_normalized)
+    prediction_probabilities = Predictor(verbose=VERBOSE).predict(model_obj, image_normalized)
 
     # Normalize probabilities to sum to 1
     # prediction_probabilities = prediction_probabilities / np.sum(prediction_probabilities)

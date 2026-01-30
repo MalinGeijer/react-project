@@ -1,24 +1,21 @@
 import numpy as np
 import tensorflow as tf
+from .logger import log
+from src.config import VERBOSE
 
 class Predictor:
     """
     A class for making predictions using trained ML models.
     """
 
-    def __init__(self, verbose=True):
+    def __init__(self, verbose=None):
       """
         Initialize the Predictor.
 
         Args:
             verbose (bool): Whether to print debug messages.
         """
-      self.verbose = verbose
-
-    def _log(self, msg):
-      """Print log message if verbose is enabled."""
-      if self.verbose:
-        print(f"[Predictor] {msg}")
+      self.verbose = verbose if verbose is not None else VERBOSE  
 
     def predict(self, model, input_data: np.ndarray) -> np.ndarray:
       """
@@ -45,6 +42,6 @@ class Predictor:
       else:
           probabilities = model.predict_proba(data)[0]
 
-      self._log(f"Probabilities: {probabilities}")
+      log(f"Probabilities: {probabilities}", caller="Predictor", verbose=self.verbose)
 
       return probabilities

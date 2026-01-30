@@ -10,7 +10,7 @@ from tensorflow.keras.callbacks import CSVLogger
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from joblib import dump
-from data_processor import DataProcessor
+from .data_processor import DataProcessor
 
 class ModelTrainer:
     """

@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 import sys
 
-from model_trainer import ModelTrainer
+from src import ModelTrainer
 
 def main():
     p = argparse.ArgumentParser(
@@ -21,17 +21,17 @@ def main():
         "-i",
         type=int,
         default=300,
-        help="Iterations (LR)")
+        help="Iterations (LR). Default is 300.")
     p.add_argument(
         "-t",
         type=int,
         default=300,
-        help="Number of trees (RF)")
+        help="Number of trees (RF). Default is 300.")
     p.add_argument(
         "-e",
         type=int,
         default=20,
-        help="Number of epochs (MLP)")
+        help="Number of epochs (MLP). Default is 20.")
     args = p.parse_args()
 
     mt = ModelTrainer(

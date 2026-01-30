@@ -30,7 +30,7 @@ def get_products():
     cursor.execute("SELECT id, name, brand, price, image_url, description FROM products")
     rows = cursor.fetchall()
     conn.close()
-    # Konvertera rader till lista av dicts
+    # Convert rows to list of dicts
     return [
         {
             "id": row[0],
