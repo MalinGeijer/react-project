@@ -25,7 +25,7 @@ app = Flask(__name__)
 # Load ML models
 # --------------------------------------------------
 MODELS = {}
-# loader(MODELS, verbose=True)
+loader(MODELS, verbose=True)
 
 # --------------------------------------------------
 # Load environment variables
