@@ -1,17 +1,23 @@
+import os
 import sqlite3
-import requests, os
+import requests
 from dotenv import load_dotenv
 
-# Load environment variables from the .env file
+# --------------------------------------------------
+# Environment variables
+# --------------------------------------------------
 load_dotenv()
 IG_USER_ID = os.environ.get("IG_USER_ID")
 TOKEN = os.environ.get("IG_ACCESS_TOKEN")
 
-# Create/open the database
-conn = sqlite3.connect("../db/gallery.db")
-# Create a cursor object to execute SQL commands
+# --------------------------------------------------
+# Database setup
+# --------------------------------------------------
+DB_PATH = "../db/gallery.db"
+
+conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
-# Create the table if it doesn't exist
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS gallery (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,76 +25,87 @@ CREATE TABLE IF NOT EXISTS gallery (
 )
 """)
 
-# Delete all existing rows in the table
+# Clear existing data
 cursor.execute("DELETE FROM gallery")
-# Save (commit) the changes and close the connection
 conn.commit()
 conn.close()
 
-### Helper Functions ###
+# --------------------------------------------------
+# Helper functions
+# --------------------------------------------------
+def has_add2shop(caption: str) -> bool:
+    """
+    Check whether an Instagram caption contains the hashtag '#add2shop'.
 
-def has_add2shop(caption):
-    """Check if the caption contains the hashtag #add2shop."""
+    Args:
+        caption (str): Instagram post caption.
+
+    Returns:
+        bool: True if hashtag is present, otherwise False.
+    """
     if not caption:
         return False
-    # Split caption into words
+
     words = caption.split()
     for word in words:
         if word.lower() == "#add2shop":
             return True
 
-def insert_image(image_url):
-    """Add a new image with the given image URL to the database."""
-    conn = sqlite3.connect("../db/gallery.db")
+    return False
+
+
+def insert_image(image_url: str) -> None:
+    """
+    Insert an image URL into the gallery database.
+
+    Args:
+        image_url (str): URL of the image to store.
+    """
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO gallery (media_url)
-        VALUES (?)
-    """, (image_url,))
+    cursor.execute(
+        "INSERT INTO gallery (media_url) VALUES (?)",
+        (image_url,)
+    )
     conn.commit()
     conn.close()
 
+# --------------------------------------------------
 # Fetch media from Instagram Graph API
+# --------------------------------------------------
 url = f"https://graph.facebook.com/v21.0/{IG_USER_ID}/media"
 params = {
     "fields": "id,media_type,media_url,caption,children{media_type,media_url}",
     "access_token": TOKEN,
     "limit": 30
 }
-# Response from the API including HTTP status, header and body
+
 response = requests.get(url, params=params)
-# Convert the response to JSON and get the data
 items = response.json().get("data", [])
 
-# Loop through each item in the response data
+# --------------------------------------------------
+# Process media items
+# --------------------------------------------------
 for item in items:
-    # Get the value of the key "caption" from each item in the dictionary
-    # If there is no caption, default to an empty string
     caption = item.get("caption", "")
 
-    # Continue to the next item if #add2shop is not in the caption
+    # Skip posts without #add2shop hashtag
     if not has_add2shop(caption):
         continue
 
     media_url = None
 
-    if item["media_type"] == "IMAGE":
-        media_url = item["media_url"]
-    elif item["media_type"] == "CAROUSEL_ALBUM":
-        # Get the first image from carousel children if available
+    if item.get("media_type") == "IMAGE":
+        media_url = item.get("media_url")
+
+    elif item.get("media_type") == "CAROUSEL_ALBUM":
         children = item.get("children", {}).get("data", [])
-        # Loop through children to find the first image
-        first_image = None
         for child in children:
             if child.get("media_type") == "IMAGE":
-                first_image = child
+                media_url = child.get("media_url")
                 break
-        # If an image was found among the children, get its media_url
-        if first_image:
-            media_url = first_image["media_url"]
 
-    # Insert the product into the database if it has the hashtag and a media URL
     if media_url:
         insert_image(media_url)
 
-print(f"Database 'gallery.db' created.")
+print("Database 'gallery.db' updated.") 

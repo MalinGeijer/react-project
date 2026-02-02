@@ -1,20 +1,15 @@
 import os
 import random
 import logging
+from flask import Flask, jsonify, request
+from dotenv import load_dotenv
+
 from src.utils.logger import log
 from src.config import VERBOSE
+from src import loader, predict_number_from_request, get_gallery, get_products, delete_product
 
 # Suppress Flask's default logging to keep the output clean
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
-
-
-# - Flask is a lightweight web framework for Python. Is used to create a simple server
-#   that can handle HTTP requests from the React frontend.
-# - request is used to handle incoming HTTP requests
-# - jsonify is used to send JSON responses back to the client
-from flask import Flask, jsonify, request
-from dotenv import load_dotenv
-from src import loader, predict_number_from_request, get_gallery, get_products, delete_product
 
 # --------------------------------------------------
 # Flask app
@@ -47,17 +42,17 @@ DB_FOLDER = os.path.join(PARENT_DIR, "data", "db")
 os.makedirs(DB_FOLDER, exist_ok=True)
 DB_PATH = os.path.join(DB_FOLDER, "shop.db")
 
-
-
 # --------------------------------------------------
 # Routes
 # --------------------------------------------------
 @app.route("/")
 def health():
+    """Health check route. Returns server status."""
     return "Server Status: Running"
 
 @app.route("/api/predict", methods=["POST"])
 def predict():
+    """Predict digit from base64 image payload."""
     log("/api/predict called", caller="App", verbose=VERBOSE)
     # Get the JSON data from the request
     data = request.get_json(silent=True) or {}
@@ -65,11 +60,13 @@ def predict():
 
 @app.route("/api/gallery")
 def api_gallery():
+    """Return all gallery entries."""
     log("/api/gallery called", caller="App", verbose=VERBOSE)
     return jsonify(get_gallery())
 
 @app.route("/api/products")
 def api_products():
+    """Return all products or filtered products if query 'q' is provided."""
     log("/api/products called", caller="App", verbose=VERBOSE)
     q = request.args.get("q", "").strip().lower()
     products = get_products()
@@ -113,6 +110,7 @@ def api_product(product_id: int):
 
 @app.route("/api/login", methods=["POST"])
 def api_login():
+    """Authenticate admin user."""
     data = request.get_json(silent=True)
     log("/api/login called", caller="App", verbose=VERBOSE)
     username = data.get("username", "")
@@ -120,16 +118,17 @@ def api_login():
 
     if username == ADMIN_USER and password == ADMIN_PASS:
         return jsonify({"success": True})
-    return jsonify({"success": False, "error": "Fel användarnamn eller lösenord"}), 401
+    return jsonify({"success": False, "error": "Invalid username or password"}), 401
 
 @app.route("/api/products", methods=["POST"])
 def api_add_product():
+    """Add a new product to the database."""
     data = request.get_json()
     log("/api/products POST called", caller="App", verbose=VERBOSE)
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
-    products = get_products()  # Hämta nuvarande produkter
+    products = get_products() 
     new_id = max([p["id"] for p in products], default=0) + 1
     new_product = {
         "id": new_id,
@@ -140,8 +139,7 @@ def api_add_product():
         "image_url": data.get("image_url", ""),
     }
 
-    # Spara till DB (eller memory om du inte implementerat insert yet)
-    # Här behöver du skriva en funktion i db_utils.py som lägger till produkt
+    # Save to DB
     from src.utils.db_utils import add_product
     add_product(new_product)
 
@@ -149,6 +147,7 @@ def api_add_product():
 
 @app.route("/api/products/<int:product_id>", methods=["DELETE"])
 def api_delete_product(product_id: int):
+    """Delete a product by id."""
     log(f"/api/products/{product_id} DELETE called", caller="App", verbose=VERBOSE)
     success = delete_product(product_id)
     if success:
@@ -158,6 +157,7 @@ def api_delete_product(product_id: int):
 
 @app.route("/api/products/random")
 def random_products():
+    """Return 6 random products."""
     log("/api/products/random called", caller="App", verbose=VERBOSE)
     try:
         products = get_products()
@@ -171,6 +171,5 @@ def random_products():
 # --------------------------------------------------
 if __name__ == "__main__":
     # Start the Flask development server on port 5000
-    # debug=True reloads the server automatically when files change
     log("Starting Flask server on port 5000", caller="App", verbose=True)
     app.run(host="0.0.0.0", port=5000)

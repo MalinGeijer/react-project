@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, type RefObject, use } from "react";
 import { ProbabilityHeatmap } from "../components/Predict/ProbabilityHeatmap";
 import { ConfidenceCircle } from "../components/Predict/ConfidenceCircle";
 import { startDrawing, draw, stopDrawing, clearCanvas } from "../utils/canvasUtils";
-import { usePredictNumber } from "../hooks/usePredictNumber";
+import { predictNumber } from "../components/Predict/PredictNumber";
 import type { PredictionResult } from "../utils/types";
 
 export default function CanvasPredict() {
@@ -78,21 +78,24 @@ export default function CanvasPredict() {
               Clear
             </button>
 
+            {/* Pass a function to onClick to prevent re-renders; calling predictNumber() directly would trigger an infinite loop. */}
             <button
-              // usePredictNumber is a custom hook, you cannot call it inside JSX like a normal function.
-              // Hooks can only be called at the top level of a component, not inside event handlers.
-              onClick={usePredictNumber(canvasRef, model, setResult)}
-              className="px-4 py-1 bg-base-muted text-black  hover:bg-base-hover rounded-lg transition">
+              onClick={() => predictNumber(canvasRef, model, setResult)}
+              className="px-4 py-1 bg-base-muted text-black hover:bg-base-hover rounded-lg transition"
+            >
               Predict
             </button>
+
         </div>
       </div>
 
       {/* Prediction result, plots and statistics */}
       {result && (
         <div className="mt-4 border border-black p-6 rounded-lg w-full max-w-md">
-          {result.error ? (
-            <p className="text-red-400">Fel: {result.error}</p>
+          {result.info ? (
+            <p className="text-yellow-300">Info: {result.info}</p>
+          ) : result.error ? (
+            <p className="text-red-400">Error: {result.error}</p>
           ) : (
             <>
               <p className="text-xl font-semibold">

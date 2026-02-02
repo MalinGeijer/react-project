@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import numpy as np
-import tensorflow as tf
+import contextlib
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
@@ -14,15 +14,19 @@ from .data_processor import DataProcessor
 
 class ModelTrainer:
     """
-    Class to train different ML models on the MNIST dataset.
+    Train ML models (Logistic Regression, Random Forest, or MLP) on MNIST dataset.
 
-    Args:
-        model_name (str): Model to train: "LR" (LogisticRegression), "RF" (RandomForest), "MLP" (NeuralNetwork).
+    Attributes:
+        model_name (str): 'LR', 'RF', or 'MLP'.
         train_size (int): Number of training samples.
-        iterations (int): Number of iterations (for LR).
-        trees (int): Number of trees (for RF).
-        epochs (int): Number of epochs (for MLP).
-        random_state (int): Random seed for reproducibility.
+        iterations (int): Number of iterations for LR.
+        trees (int): Number of trees for RF.
+        epochs (int): Number of epochs for MLP.
+        random_state (int): Random seed.
+        is_trained (bool): Flag indicating if training is complete.
+        full_name (str): Full name of the model.
+        model: Instantiated ML model.
+        logger: Logger instance for training.
     """
 
     MODEL_NAMES = {
@@ -45,6 +49,21 @@ class ModelTrainer:
                  epochs=20,
                  random_state=42):
 
+        """
+        Initialize ModelTrainer with model parameters and logging setup.
+
+        Args:
+            model_name (str): 'LR', 'RF', or 'MLP'.
+            train_size (int): Number of training samples.
+            iterations (int): Number of iterations for LR.
+            trees (int): Number of trees for RF.
+            epochs (int): Number of epochs for MLP.
+            random_state (int): Random seed for reproducibility.
+
+        Raises:
+            ValueError: If an unsupported model_name is provided.
+        """
+
         self.random_state = random_state
         self.train_size = train_size
         self.iterations = iterations
@@ -61,7 +80,7 @@ class ModelTrainer:
             level=logging.INFO,
             format="%(asctime)s [%(levelname)s] %(message)s",
             handlers=[
-                logging.FileHandler(log_file, mode='w'),  # skriv över filen
+                logging.FileHandler(log_file, mode='w'),  # overwrite log file
                 logging.StreamHandler(sys.stdout)
             ]
         )
@@ -99,7 +118,12 @@ class ModelTrainer:
             raise ValueError(f"Model '{self.full_name}' is not supported")
 
     def train_on_mnist(self):
-        """Train the selected model on MNIST and log output."""
+        """
+        Load MNIST, preprocess images, train the model, and save it to disk.
+
+        Returns:
+            str: File path to the saved model.
+        """
         self.logger.info(f"Loading MNIST dataset...")
         (x_train, y_train), (_, _) = mnist.load_data()
         x_train = x_train[:self.train_size]
@@ -119,8 +143,7 @@ class ModelTrainer:
 
         os.makedirs("models", exist_ok=True)
         if self.full_name in ["LogisticRegression", "RandomForest"]:
-            # Sklearn verbose output går till stdout och loggfil
-            import contextlib
+            # Sklearn verbose output to stdout and log file
             log_path = self.LOG_FILENAMES[self.full_name]
             with open(log_path, "a") as f, contextlib.redirect_stdout(f):
                 self.model.fit(x_train_processed, y_train)

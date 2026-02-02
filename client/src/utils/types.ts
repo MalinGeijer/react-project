@@ -34,4 +34,5 @@ export type PredictionResult = {
   confidence?: number;
   probabilities?: { digit: number; prob: number }[];
   error?: string;
+  info?: string;
 };

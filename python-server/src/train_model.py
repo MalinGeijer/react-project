@@ -1,6 +1,4 @@
 import argparse
-from pathlib import Path
-import sys
 
 from src import ModelTrainer
 
@@ -21,7 +19,7 @@ def main():
         "-i",
         type=int,
         default=300,
-        help="Iterations (LR). Default is 300.")
+        help="Number of iterations (LR). Default is 300.")
     p.add_argument(
         "-t",
         type=int,

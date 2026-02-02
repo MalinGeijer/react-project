@@ -2,9 +2,7 @@
 import base64
 import io
 import numpy as np
-import inspect
 from pathlib import Path
-from datetime import datetime
 from PIL import Image
 from scipy import ndimage
 from .logger import log
@@ -12,14 +10,15 @@ from src.config import VERBOSE
 
 class DataProcessor:
     """
-    Processing images encoded in Base64 for use in ML pipelines.
+    Process images encoded in Base64 for ML pipelines.
 
     The processing includes:
         - Decoding Base64 strings into images
-        - Cropping to the content bounding box
+        - Cropping to content bounding box
         - Resizing to fit within a 20x20 box while maintaining aspect ratio
         - Centering the image on a 28x28 grayscale canvas
-        - Normalizing pixel values to [0, 1] and flattening to a 1D array
+        - Centering based on the center of mass (MNIST-style)
+        - Normalizing pixel values to [0, 1] and flattening to 1D array
         - Saving processed images for debugging
 
     Attributes:
@@ -41,7 +40,7 @@ class DataProcessor:
 
     def convert_np_array_to_image(self, array: np.ndarray) -> Image.Image:
         """
-        Converts a 1D numpy array back to a 28x28 PIL Image.
+        Convert a 1D numpy array of length 784 back to a 28x28 PIL Image.
 
         Args:
             array (np.ndarray): 1D numpy array of length 784.
@@ -64,12 +63,14 @@ class DataProcessor:
 
     def decode_base64_image(self, base64_string: str):
         """
-        Decodes a Base64-encoded string into a PIL Image.
+        Decode a Base64-encoded string into a PIL Image.
         Saves the decoded image for debugging.
+
         Args:
             base64_string (str): Base64-encoded image string.
+
         Returns:
-            Image: Decoded PIL Image.
+            Image.Image: Decoded PIL Image.
         """
         # Remove header if present (e.g., "data:image/png;base64,")
         if "," in base64_string:
@@ -93,8 +94,8 @@ class DataProcessor:
 
     def resize_and_center_image(self, image: Image.Image) -> Image.Image:
         """
-        Resize the image to fit within a 20x20 box while maintaining aspect ratio,
-        then center it on a 28x28 grayscale canvas.
+        Resize image to fit within 20x20 box while maintaining aspect ratio,
+        then center it on a 28x28 grayscale canvas, and center using center of mass.
 
         Args:
             image (Image.Image): Input PIL Image.
@@ -106,13 +107,11 @@ class DataProcessor:
         image = image.convert("L")
         log("Converted image to grayscale", caller="DataProcessor", verbose=self.verbose)
 
-        # Crop to content
+        # Crop to content, check for empty bbox already done
         bbox = image.getbbox()
         if bbox:
           image = image.crop(bbox)
           log(f"Image cropped to bbox: {bbox}", caller="DataProcessor", verbose=self.verbose)
-        else:
-            raise ValueError("Decoded image contains no visible content")
 
         w, h = image.size
         log(f"Image size after cropping: width={w}, height={h}", caller="DataProcessor", verbose=self.verbose)
@@ -162,10 +161,11 @@ class DataProcessor:
 
     def normalize_and_flatten_image(self, image: Image.Image) -> np.ndarray:
         """
-        Normalize pixel values to [0, 1] and flatten the image to a 1D array.
+        Normalize pixel values to [0, 1] and flatten image to a 1D array.
 
         Args:
             image (Image.Image): Input PIL Image.
+
         Returns:
             np.ndarray: Flattened and normalized image array.
         """

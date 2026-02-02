@@ -4,31 +4,27 @@ from .data_processor import DataProcessor
 from .predict import Predictor
 from src.config import VERBOSE
 
-def predict_number_from_request(data, MODELS):
+def predict_number_from_request(data: dict, MODELS: dict):
     """
-    Process a JSON request containing a base64 image and model name,
-    and return the prediction result as a dictionary.
-    """
-    if data is None:
-        return jsonify({"error": "Invalid or missing JSON"}), 400
+    Process a JSON request containing a base64-encoded image and predict the digit.
 
-    # Get the base64 encoded image string
-    image = data.get("image", "")
-    model_name = data.get("model", "logistic_regression")
+    Expected payload:
+        - image: base64-encoded image string
+        - model: optional model key (defaults to "logistic_regression")
+
+    Returns:
+        - JSON response with:
+            - predicted_digit (int)
+            - confidence (float)
+            - probabilities (list of dicts with 'digit' and 'prob')
+            - model_used (str)
+        - HTTP status code (200 if successful, 400 if no image)
+    """
+    image = data.get("image")
 
     if not image:
-        return jsonify({"error": "No image provided"}), 400
-    if model_name not in MODELS:
-        return jsonify({
-            "error": f"Model '{model_name}' not available",
-            "models_loaded": list(MODELS.keys())
-        }), 400
-
-    model_obj = MODELS.get(model_name)
-    if model_obj is None:
-        return jsonify({
-            "error": f"Model '{model_name}' failed to load or is unavailable"
-        }), 500
+        return jsonify({"error": "No image provided."}), 400 
+    model_name = data.get("model", "logistic_regression")
 
     # Process the image
     dp = DataProcessor(verbose=VERBOSE)
@@ -37,11 +33,14 @@ def predict_number_from_request(data, MODELS):
     image_normalized = dp.normalize_and_flatten_image(image_resized)
 
     # Predict
-    prediction_probabilities = Predictor(verbose=VERBOSE).predict(model_obj, image_normalized)
+    model_obj = MODELS[model_name]
+    prediction_probabilities = Predictor(verbose=VERBOSE).predict(
+        model_obj,
+        image_normalized
+    )
 
     # Normalize probabilities to sum to 1
-    # prediction_probabilities = prediction_probabilities / np.sum(prediction_probabilities)
-    # print(Sannolikheterna summerar till 1 och representerar en normaliserad sannolikhetsfördelning.)
+    prediction_probabilities = prediction_probabilities / np.sum(prediction_probabilities)
 
     # Build response
     response = {
@@ -53,5 +52,4 @@ def predict_number_from_request(data, MODELS):
         ],
         "model_used": model_name
     }
-    return jsonify(response)
-
+    return jsonify(response), 200

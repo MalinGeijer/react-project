@@ -5,11 +5,17 @@ from pathlib import Path
 DB_PATH = Path('data/db')
 
 # --------------------------------------------------
-# Helper functions and classes
+# Helper functions for SQLite databases
 # --------------------------------------------------
 
-def get_gallery():
-    # Path realative to working directory
+def get_gallery() -> list[Dict]:
+    """
+    Retrieve all entries from the gallery database.
+
+    Returns:
+        list[Dict]: List of dictionaries with keys 'id' and 'media_url'.
+    """
+    # Path relative to working directory 
     conn = sqlite3.connect(DB_PATH/'gallery.db')
     cursor = conn.cursor()
     cursor.execute("SELECT id, media_url FROM gallery")
@@ -24,7 +30,13 @@ def get_gallery():
         for row in rows
     ]
 
-def get_products():
+def get_products() -> list[Dict]:
+    """
+    Retrieve all entries from the products database.
+
+    Returns:
+        list[Dict]: List of dictionaries with product info.
+    """
     conn = sqlite3.connect(DB_PATH/'products.db')
     cursor = conn.cursor()
     cursor.execute("SELECT id, name, brand, price, image_url, description FROM products")
@@ -44,6 +56,12 @@ def get_products():
     ]
 
 def add_product(product: Dict) -> None:
+    """
+    Add a product to the products database.
+
+    Args:
+        product (Dict): Dictionary containing keys 'id', 'name', 'brand', 'price', 'description', 'image_url'.
+    """
     conn = sqlite3.connect(DB_PATH/'products.db')
     c = conn.cursor()
     c.execute("""
@@ -55,6 +73,15 @@ def add_product(product: Dict) -> None:
     conn.close()
 
 def delete_product(product_id: int) -> bool:
+    """
+    Delete a product from the products database by ID.
+
+    Args:
+        product_id (int): ID of the product to delete.
+
+    Returns:
+        bool: True if a row was deleted, False otherwise.
+    """
     conn = sqlite3.connect(DB_PATH/'products.db')
     c = conn.cursor()
     c.execute("DELETE FROM products WHERE id = ?", (product_id,))

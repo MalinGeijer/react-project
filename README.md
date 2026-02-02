@@ -44,6 +44,15 @@ python -m src.train_model -h
 ```
 from the `python-server` directory
 
+
+## Environment variables
+
+To be able to login as an administator, create a `.env` file based on `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
 ## Installation and start
 Open a terminal and run:
 
