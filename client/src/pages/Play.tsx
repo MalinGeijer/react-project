@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, type RefObject, use } from "react";
+import { useRef, useState, useEffect, type RefObject } from "react";
 import { ProbabilityHeatmap } from "../components/Predict/ProbabilityHeatmap";
 import { ConfidenceCircle } from "../components/Predict/ConfidenceCircle";
 import { startDrawing, draw, stopDrawing, clearCanvas } from "../utils/canvasUtils";
@@ -79,6 +79,7 @@ export default function CanvasPredict() {
             </button>
 
             {/* Pass a function to onClick to prevent re-renders; calling predictNumber() directly would trigger an infinite loop. */}
+
             <button
               onClick={() => predictNumber(canvasRef, model, setResult)}
               className="px-4 py-1 bg-base-muted text-black hover:bg-base-hover rounded-lg transition"
