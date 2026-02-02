@@ -15,3 +15,5 @@ venv/
 *.so
 *.dll
 *.dylib
+
+images/
