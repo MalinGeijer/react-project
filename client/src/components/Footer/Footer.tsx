@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { SITE_TITLE } from '../../config/site';
 import { SocialIcon } from '../SocialIcon/SocialIcon';
 import type { Product_T } from '../../utils/types';
-import { log } from '../../utils/logger';
 
 export default function Footer() {
   const [products, setProducts] = useState<Product_T[]>([]);
@@ -14,17 +13,13 @@ export default function Footer() {
     fetch('/api/products')
       // Best practice to check if the response is ok
       .then(res => {
-        // Debug logging
-        log(`Status: ${res.status} (${res.statusText})`);
-        log('Headers:', [...res.headers]);  // Header contents
-        log('URL:', res.url);               // URL that responded
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         return res.json();
       })
       .then(data => {
-        log('JSON data:', data);
         setProducts(data)
       })
       // Catch network or parsing errors

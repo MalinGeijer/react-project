@@ -13,9 +13,6 @@ export default function Header() {
   const count = favorites.length;
   const cartCount = cart.reduce((sum, p) => sum + p.quantity, 0);
 
-  // Logga till konsolen
-  log('Header rendered');
-
   return (
     <header className="siteHeader border-b border-base-border">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center p-3 gap-3">

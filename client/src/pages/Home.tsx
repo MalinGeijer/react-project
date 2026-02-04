@@ -6,7 +6,7 @@ import { useSearch } from '../context/SearchContext'; // ny import
 
 export default function Home() {
   const [products, setProducts] = useState<Product_T[]>([]);
-  const { searchQuery } = useSearch(); // läs söktext från Header
+  const { searchQuery } = useSearch();
 
   useEffect(() => {
     fetch('/api/products')

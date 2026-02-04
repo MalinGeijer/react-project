@@ -30,9 +30,11 @@ export type LoginResponse = {
 };
 
 export type PredictionResult = {
+  model?: string;
+  label?: number;
   predicted_digit?: number;
   confidence?: number;
-  probabilities?: { digit: number; prob: number }[];
-  error?: string;
+  probabilities?: number[];
   info?: string;
-};
+  error?: string;
+}

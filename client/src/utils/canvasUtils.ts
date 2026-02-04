@@ -1,4 +1,4 @@
-import { type RefObject } from "react";
+import React, { type RefObject } from "react";
 import type { PredictionResult } from "./types";
 
 export const startDrawing = (
@@ -34,10 +34,12 @@ export const stopDrawing = (
 export const clearCanvas = (
   ctxRef: RefObject<CanvasRenderingContext2D | null>,
   canvasRef: RefObject<HTMLCanvasElement | null>,
-  setResult: React.Dispatch<React.SetStateAction<PredictionResult | null>>
+  setResult: React.Dispatch<React.SetStateAction<PredictionResult | null>>,
+  setLabel: React.Dispatch<React.SetStateAction<number | null>>
 ) => {
   if (!ctxRef.current || !canvasRef.current) return;
   ctxRef.current.fillStyle = "black";
   ctxRef.current.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
   setResult(null);
+  setLabel(null);
 };

@@ -3,6 +3,7 @@ from flask import jsonify
 from .data_processor import DataProcessor
 from .predict import Predictor
 from src.config import VERBOSE
+from .logger import log
 
 def predict_number_from_request(data: dict, MODELS: dict):
     """
@@ -23,8 +24,11 @@ def predict_number_from_request(data: dict, MODELS: dict):
     image = data.get("image")
 
     if not image:
-        return jsonify({"error": "No image provided."}), 400 
+        return jsonify({"error": "No image provided."}), 400
     model_name = data.get("model", "logistic_regression")
+
+    label = data.get("label")
+    log(f"Label: {label}")
 
     # Process the image
     dp = DataProcessor(verbose=VERBOSE)
@@ -34,7 +38,7 @@ def predict_number_from_request(data: dict, MODELS: dict):
 
     # Predict
     model_obj = MODELS[model_name]
-    prediction_probabilities = Predictor(verbose=VERBOSE).predict(
+    prediction_probabilities = Predictor(label=label, verbose=VERBOSE).predict(
         model_obj,
         image_normalized
     )
@@ -44,12 +48,14 @@ def predict_number_from_request(data: dict, MODELS: dict):
 
     # Build response
     response = {
+        "label": label,
         "predicted_digit": int(np.argmax(prediction_probabilities)),
         "confidence": float(np.max(prediction_probabilities)),
         "probabilities": [
             {"digit": i, "prob": float(prediction_probabilities[i])}
             for i in range(10)
         ],
-        "model_used": model_name
+        "model": model_name
     }
+    log(f"Response: {response}", caller="predict_number_from_request", verbose=True)
     return jsonify(response), 200

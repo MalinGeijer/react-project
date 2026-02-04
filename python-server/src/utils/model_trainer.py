@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 import numpy as np
-import contextlib
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
@@ -10,7 +9,6 @@ from tensorflow.keras.callbacks import CSVLogger
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from joblib import dump
-from .data_processor import DataProcessor
 
 class ModelTrainer:
     """
@@ -119,36 +117,34 @@ class ModelTrainer:
 
     def train_on_mnist(self):
         """
-        Load MNIST, preprocess images, train the model, and save it to disk.
+        Load MNIST, normalize, train the model, calculate training accuracy,
+        and save it to disk.
 
         Returns:
             str: File path to the saved model.
         """
-        self.logger.info(f"Loading MNIST dataset...")
+        self.logger.info("Loading MNIST dataset...")
         (x_train, y_train), (_, _) = mnist.load_data()
-        x_train = x_train[:self.train_size]
         y_train = y_train[:self.train_size]
-
-        self.logger.info(f"Preprocessing {len(x_train)} images...")
-        dp = DataProcessor(verbose=False)
-        x_train_processed = []
-        for arr in x_train:
-            img = dp.convert_np_array_to_image(arr)
-            img = dp.resize_and_center_image(img)
-            img = dp.normalize_and_flatten_image(img)
-            x_train_processed.append(img)
-        x_train_processed = np.array(x_train_processed, dtype=np.float32)
-
+        # Preprocess data: flatten and normalize
+        x_train_processed = x_train[:self.train_size].reshape(self.train_size, -1) / 255.0
         self.logger.info(f"Starting training on {x_train_processed.shape[0]} samples...")
 
         os.makedirs("models", exist_ok=True)
+
         if self.full_name in ["LogisticRegression", "RandomForest"]:
-            # Sklearn verbose output to stdout and log file
-            log_path = self.LOG_FILENAMES[self.full_name]
-            with open(log_path, "a") as f, contextlib.redirect_stdout(f):
-                self.model.fit(x_train_processed, y_train)
+            # Train sklearn model
+            self.model.fit(x_train_processed, y_train)
+
+            # Calculate training accuracy
+            train_accuracy = self.model.score(x_train_processed, y_train)
+
+            # Log training accuracy
+            self.logger.info(f"Training accuracy: {train_accuracy:.4f}")
+
             file_path = os.path.join("models", f"{self.full_name}.joblib")
             dump(self.model, file_path)
+
         else:  # NeuralNetwork
             csv_logger = CSVLogger(self.LOG_FILENAMES[self.full_name])
             self.model.fit(
@@ -159,6 +155,14 @@ class ModelTrainer:
                 verbose=1,
                 callbacks=[csv_logger]
             )
+
+            # Calculate training accuracy
+            train_preds = np.argmax(self.model.predict(x_train_processed), axis=1)
+            train_accuracy = (train_preds == y_train).mean()
+
+            # Log training accuracy
+            self.logger.info(f"Training accuracy: {train_accuracy:.4f}")
+
             file_path = os.path.join("models", f"{self.full_name}.h5")
             self.model.save(file_path)
 
