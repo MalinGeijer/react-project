@@ -57,7 +57,7 @@ cp .env.example .env
 Open a terminal and run:
 
 ```bash
-git clone https://github.com/MalinGeijer/react-project.git
+git clone https://github.com/MalinGeijer/react-project/tree/python-ai-submission-v2
 cd react-project/python-server
 python -m venv venv
 source venv/bin/activate
