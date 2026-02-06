@@ -13,7 +13,6 @@ import {
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Legend,
   ResponsiveContainer,
   Tooltip,
@@ -137,7 +136,7 @@ export default function CanvasPredict() {
         if (pred === label) {
           correctCounts[label]++;
         } else {
-          incorrectCounts[pred]++;
+          incorrectCounts[label]++;
         }
       }
     });
@@ -226,9 +225,11 @@ export default function CanvasPredict() {
             Predict Number
           </button>
         </div>
+        <p>The below is only relevant if you the statistics over time</p>
+
         <div className="flex items-center space-x-2">
           <label className="text-black whitespace-nowrap">
-            Enter the number written (optional):
+            Enter the number written:
           </label>
           <input
             type="number"
@@ -399,8 +400,8 @@ export default function CanvasPredict() {
         )}
         <button
           onClick={() => {
-            setHistory([]); // töm state
-            localStorage.removeItem('predictionHistory'); // ta bort från localStorage
+            setHistory([]);
+            localStorage.removeItem('predictionHistory');
           }}
           className="px-4 py-1 bg-base-muted text-black hover:bg-base-hover rounded transition">
           Clear History

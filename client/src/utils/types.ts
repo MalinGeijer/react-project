@@ -29,12 +29,17 @@ export type LoginResponse = {
   };
 };
 
+export type Probability = {
+  digit: number;
+  prob: number;
+};
+
 export type PredictionResult = {
   model?: string;
   label?: number;
   predicted_digit?: number;
   confidence?: number;
-  probabilities?: number[];
+  probabilities?: Probability[]; 
   info?: string;
   error?: string;
-}
+};
