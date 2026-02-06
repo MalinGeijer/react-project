@@ -57,8 +57,10 @@ cp .env.example .env
 Open a terminal and run:
 
 ```bash
-git clone https://github.com/MalinGeijer/react-project/tree/python-ai-submission-v2
-cd react-project/python-server
+git clone https://github.com/MalinGeijer/react-project.git
+cd react-project
+git checkout python-ai-submission-v3
+cd python-server
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
