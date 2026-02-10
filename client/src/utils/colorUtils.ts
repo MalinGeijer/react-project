@@ -2,8 +2,8 @@ export function probabilityToColor(prob: number) {
   // clamp
   const p = Math.max(0, Math.min(1, prob));
 
-  const hueStart = 0;       // röd (spelar mindre roll för grå)
-  const hueEnd = 0;         // röd
+  const hueStart = 100;       // röd (spelar mindre roll för grå)
+  const hueEnd = 140;         // röd
   const saturationStart = 10;
   const saturationEnd = 85;
   const lightnessStart = 80;

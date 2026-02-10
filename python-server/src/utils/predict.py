@@ -40,13 +40,13 @@ class Predictor:
         # Reshape input data to match required model input shape
         data = input_data.reshape(1, -1)
 
-        # Gör prediktionen
+        # Make prediction and determine model type for logging
         if isinstance(model, tf.keras.Model):
             probabilities = model.predict(data)[0]
             model_name = "neural_network"
         else:
             probabilities = model.predict_proba(data)[0]
-            # Bestäm loggningsfil baserat på modelltyp
+            # Determine log file based on model type
             model_class_name = type(model).__name__.lower()
             if "logistic" in model_class_name:
                 model_name = "logistic_regression"
@@ -55,10 +55,10 @@ class Predictor:
             else:
                 model_name = "other_model"
 
-        # Logga probabilities till konsol
+        # Log to console
         log(f"Probabilities: {probabilities}", caller="Predictor", verbose=self.verbose)
 
-        # Logga resultat till fil
+        # Log results to file
         self._log_result(model_name, probabilities)
 
         return probabilities

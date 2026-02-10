@@ -28,7 +28,6 @@ def predict_number_from_request(data: dict, MODELS: dict):
     model_name = data.get("model", "logistic_regression")
 
     label = data.get("label")
-    log(f"Label: {label}")
 
     # Process the image
     dp = DataProcessor(verbose=VERBOSE)
@@ -57,5 +56,4 @@ def predict_number_from_request(data: dict, MODELS: dict):
         ],
         "model": model_name
     }
-    log(f"Response: {response}", caller="predict_number_from_request", verbose=True)
     return jsonify(response), 200
