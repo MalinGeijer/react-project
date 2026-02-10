@@ -1,12 +1,21 @@
+import { useNavigate } from 'react-router-dom';
 import { SITE_TAGLINE, SITE_TITLE } from '../../config/site';
 
 export function Logo() {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate('/'); 
+  };
+
   return (
     <svg
       viewBox="0 0 420 160"
-      className="w-full max-w-[420px] h-auto"
+      className="w-full max-w-[420px] h-auto cursor-pointer"
       xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="xMidYMid meet">
+      preserveAspectRatio="xMidYMid meet"
+      onClick={handleClick}
+    >
       {/* Ram */}
       <rect
         x="10"
@@ -27,7 +36,8 @@ export function Logo() {
         fontSize="48"
         fontWeight="600"
         letterSpacing="4"
-        fill="#ffb240">
+        fill="#ffb240"
+      >
         {SITE_TITLE}
       </text>
 
@@ -39,7 +49,8 @@ export function Logo() {
         fontSize="16"
         opacity="0.7"
         fill="#a3a3a3"
-        letterSpacing="1.5">
+        letterSpacing="1.5"
+      >
         {SITE_TAGLINE}
       </text>
     </svg>

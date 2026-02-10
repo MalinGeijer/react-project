@@ -29,8 +29,8 @@ const router = createBrowserRouter([
       { path: '/product/:id', element: <Product /> },
       { path: '/admin', element: <Admin /> },
       { path: '/checkout', element: < Checkout />},
-      // 404 – alltid sist
-      { path: '*', element: <h2>404 – Page not found</h2> },
+      // 404 – always last
+      { path: '*', element: <h2>404 - Page not found</h2> },
     ],
   },
 ]);

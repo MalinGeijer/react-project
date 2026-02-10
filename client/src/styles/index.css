@@ -20,14 +20,13 @@
 ============================ */
 @layer base {
   /* Tar bort autofill-bakgrund och behåller din stil */
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus,
-  input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
-    -webkit-text-fill-color: inherit !important;
-    transition: background-color 9999s ease-in-out 0s;
-  }
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #181818 inset !important;
+    -webkit-text-fill-color: var(--color-base-muted) !important;
+}
 
   :root {
     --text-shadow-sm: 3px 0 3px rgba(0, 0, 0, 0.25);
@@ -38,11 +37,11 @@
     all: unset;
     box-sizing: border-box;
     font: inherit;
-    color: #111;
+    color: var(--color-base-muted);
     background-color: #181818;
     padding: 0.15rem 0.75rem;
     border-radius: 6px;
-    border: 1px solid border-base-border;
+    border: 1px solid var(--color-base-border);
 
     /* För bättre UX */
     width: 100%; /* input fyller container */
@@ -73,7 +72,7 @@
 ============================ */
 @layer components {
   .siteLayout {
-    @apply flex flex-col min-h-screen max-w-6xl mx-auto;
+    @apply flex flex-col min-h-screen max-w-7xl mx-auto;
   }
 
   .siteHeader {

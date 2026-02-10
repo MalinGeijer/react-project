@@ -8,6 +8,7 @@ export default function Home() {
   const [products, setProducts] = useState<Product_T[]>([]);
   const { searchQuery } = useSearch();
 
+  // Fetch products from backend API on component mount
   useEffect(() => {
     fetch('/api/products')
       .then((res) => res.json())
@@ -15,15 +16,16 @@ export default function Home() {
       .catch((err) => console.error('Error fetching products:', err));
   }, []);
 
-  // Filtrera produkter baserat på searchQuery
+  // Filter products based on search query (case-insensitive, matches name, brand, description, id or price)
   const filteredProducts = products.filter((p) => {
     const q = searchQuery.toLowerCase();
     const textMatch =
       p.name.toLowerCase().includes(q) ||
       p.brand.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q);
+    // Check if query is a number and matches id or price
     const numberMatch =
-      !isNaN(Number(q)) && (p.id === Number(q) || p.price === Number(q));
+      !isNaN(Number(q)) && p.price === Number(q);
     return textMatch || numberMatch;
   });
 
@@ -32,7 +34,7 @@ export default function Home() {
       <div className="col-span-full w-full">
         <Hero />
       </div>
-
+      {/* Map filtered products to ProductCard components */}
       {filteredProducts.map((product) => (
         <ProductCard
           key={product.id}

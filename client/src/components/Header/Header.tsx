@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useCart } from '../../context/CartContext';
 import SearchBar from './SearchBar';
-import { log } from '../../utils/logger';
 
 export default function Header() {
   const { favorites } = useFavorites();

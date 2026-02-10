@@ -1,6 +1,6 @@
 // src/main.tsx
 
-// import React from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/index.css';
@@ -15,7 +15,7 @@ setVerbose(true);
 log("Rendering React app");
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  // <React.StrictMode>
+   <React.StrictMode>
     <CartProvider>
       <FavoriteProvider>
         <SearchProvider>
@@ -23,5 +23,5 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         </SearchProvider>
       </FavoriteProvider>
     </CartProvider>
-  // </React.StrictMode>
+   </React.StrictMode>
 );

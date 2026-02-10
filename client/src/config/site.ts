@@ -7,7 +7,7 @@ export const NAV_ITEMS = [
   { label: 'Gallery', href: '/gallery' },
   { label: 'Blog', href: '/blog' },
   { label: 'Play', href: '/play' },
-  { label: 'Login', href: '/login' },
+  { label: 'Admin', href: '/login' },
 ];
 
 export const ABOUT_TEXT = `

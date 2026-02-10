@@ -21,7 +21,7 @@ export default function ProductDetails({
 
   const [relatedProducts, setRelatedProducts] = useState<Product_T[]>([]);
 
-  // Hämta 6 slumpade produkter från Flask
+  // Fetch 6 random products for the carousel when the component mounts
   useEffect(() => {
     fetch("/api/products/random")
       .then(res => res.json())
@@ -34,7 +34,7 @@ export default function ProductDetails({
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Produktdetaljer */}
+      {/* Product details */}
       <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 bg-base-surface border border-base-border rounded-xl p-6">
         <div className="relative w-full aspect-4/5 overflow-hidden rounded-lg">
           <button
@@ -73,7 +73,8 @@ export default function ProductDetails({
         </div>
       </div>
 
-      {/* Carousel med 6 slumpade produkter längst ner */}
+      {/* Carousel with 6 random products at the bottom */}
+      <h3>Related Products</h3>
       {relatedProducts.length > 0 && (
         <ProductCarousel products={relatedProducts} />
       )}

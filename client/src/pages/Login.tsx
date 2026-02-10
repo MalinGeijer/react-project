@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
@@ -7,22 +7,36 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-    const data = await res.json();
+  useEffect(() => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken) navigate('/admin');
+  }, [navigate]);
 
-    if (data.success) {
-      navigate('/admin');
-    } else {
-      setError(data.error || 'Fel användarnamn eller lösenord');
+  const handleSubmit = async (e: React.FormEvent) => {
+    // Prevent form from refreshing the page
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // adminToken is a hardcoded "true" flag stored in localStorage,
+        // so anyone can grant themselves admin by setting that value manually!!
+        localStorage.setItem('adminToken', 'true');
+        setError('');
+        navigate('/admin');
+      } else {
+        setError(data.error || 'Fel användarnamn eller lösenord');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Kunde inte logga in just nu');
     }
   };
-
 
   return (
     <div className="flex justify-center items-center">

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
-/* Interface i samma fil */
 interface GalleryImage {
   id: number;
   media_url: string;
 }
 
+// Fetche gallery images from backend database
 export default function Gallery() {
   const [images, setImages] = useState<GalleryImage[]>([]);
 
@@ -17,11 +17,11 @@ export default function Gallery() {
   }, []);
 
   return (
-    <div className="mx-auto grid gap-2 p-2
-                    grid-cols-1
+    <div className="mx-auto grid gap-2 p-2 grid-cols-1
                     sm:grid-cols-2
                     md:grid-cols-3
                     lg:grid-cols-4">
+      {/* Map images to a grid layout */}
       {images.map((image) => (
         <div
           key={image.id}
